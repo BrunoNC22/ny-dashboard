@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./catalog";
 export * from "./dashboard";
+export * from "./defaults";
 export * from "./errors";
 export * from "./filters";
 export * from "./helpers";

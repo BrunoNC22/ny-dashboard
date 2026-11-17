@@ -175,4 +175,4 @@ git add data/snapshot && git commit -m "data: add 2026-10 trip records"
 
 Isso depende do `etl.duckdb` local, que já tem os meses anteriores. Num clone novo, sem esse arquivo, rode o período completo: `pnpm etl --from 2024-11 --to 2026-10`, e depois `pnpm etl:snapshot`.
 
-Depois, atualize o CLAUDE.md (período dos dados) e, se precisar, os textos da interface que citam o período.
+Depois, atualize o **`DATA_COVERAGE`** em `shared/src/defaults/coverage.ts` (período, mês da amostra e último mês). Um teste da api falha se ele divergir do `manifest.json`. Atualize também o período dos dados no CLAUDE.md.

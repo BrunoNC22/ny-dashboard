@@ -336,6 +336,19 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Rótulos de serviço: "Yellow Taxi", "Green Taxi" e "Apps (Uber/Lyft)".
   - Valores ausentes aparecem como "—".
   - Os ícones são nomes do lucide (kebab-case).
+- **Dashboard padrão (#16, `shared/src/defaults`):**
+  - Período de set/2026 × ago/2026, com 14 widgets:
+    - 6 KPIs (corridas, receita com meta de US$ 900 mi, tarifa média, % gorjeta, espera no app com meta de 5 min, velocidade);
+    - corridas reais × projeção;
+    - participação por empresa;
+    - receita do mês atual × anterior;
+    - radar por hora do dia;
+    - mapa de zonas;
+    - tabela das zonas com mais corridas;
+    - mapa de rotas;
+    - scatter da amostra **filtrado a embarques no JFK**, para a primeira tela não carregar 1 milhão de pontos.
+  - Layouts: desktop com KPIs de 2 colunas × 3 linhas e gráficos de 4 a 8 colunas; mobile com KPIs lado a lado e o resto em largura total.
+  - `DATA_COVERAGE` concentra o período do snapshot. Um teste da api compara com o `manifest.json`.
 
 ## 14. Roteiro
 
