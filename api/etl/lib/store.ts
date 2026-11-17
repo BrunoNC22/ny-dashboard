@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import type { Duck } from "./duckdb";
+import { METRIC_COLUMNS_DDL } from "./metrics";
 import type { Month } from "./months";
 import { nextMonth } from "./months";
 import { CACHE_DIR } from "./paths";
@@ -29,23 +30,12 @@ const TABLES = {
     date DATE NOT NULL,
     service VARCHAR NOT NULL,
     company VARCHAR NOT NULL,
-    pu_zone_id SMALLINT NOT NULL,
-    trips BIGINT NOT NULL,
-    passengers DOUBLE,
-    passenger_trips BIGINT,
-    revenue DOUBLE NOT NULL,
-    fare DOUBLE NOT NULL,
-    tips DOUBLE NOT NULL,
-    distance_mi DOUBLE NOT NULL,
-    duration_s DOUBLE NOT NULL,
-    airport_trips BIGINT NOT NULL,
-    card_trips BIGINT,
-    cash_trips BIGINT,
-    cbd_fee DOUBLE NOT NULL,
-    wait_s DOUBLE,
-    wait_trips BIGINT,
-    driver_pay DOUBLE,
-    shared_trips BIGINT`,
+    pu_zone_id SMALLINT NOT NULL,${METRIC_COLUMNS_DDL}`,
+  /** Hour × service × company (CLAUDE.md §5.6, table 2). Sums only. */
+  agg_hourly: `
+    hour TIMESTAMP NOT NULL,
+    service VARCHAR NOT NULL,
+    company VARCHAR NOT NULL,${METRIC_COLUMNS_DDL}`,
 } as const;
 export type StoreTable = keyof typeof TABLES;
 

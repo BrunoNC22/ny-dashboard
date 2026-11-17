@@ -122,3 +122,7 @@ Só guarda **somas e contagens**. As métricas derivadas (médias e percentuais)
 | `wait_s`, `wait_trips`                                            | soma do tempo de espera e quantas corridas têm esse tempo                            | Yellow/Green |
 | `driver_pay`                                                      | soma do pagamento ao motorista                                                       | Yellow/Green |
 | `shared_trips`                                                    | corridas compartilhadas                                                              | Yellow/Green |
+
+### `agg_hourly`: hora × serviço × empresa
+
+`hour` é a hora cheia do embarque no horário de NY (`date_trunc('hour', pickup_at)`). As colunas de métricas são as mesmas do `agg_daily_zone` (definidas em `etl/lib/metrics.ts`). Os testes garantem que a soma das horas de um dia bate com o agregado diário em todas as métricas.
