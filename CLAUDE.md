@@ -394,6 +394,15 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - Colunas: posição, rótulo (rotas "A → B"), as métricas (compactas) e a variação da coluna de ordenação quando há comparação. A coluna ordenada tem uma **mini-barra** em gradiente proporcional ao maior valor.
   - Cabeçalho fixo (`sticky`) e rolagem interna no tamanho do widget, com `aria-sort` nos cabeçalhos.
   - O registro não tem mais `placeholder`: só o mapa (#48/#49) ainda usa o `PlaceholderWidget`.
+- **Mapa, parte 1 (#48, `web/src/widgets/map`, carregado sob demanda):**
+  - GeoJSON das zonas (`/api/zones`) + valores por zona (`/api/query/map`, modo `zones`), consultados só quando há camada de zona (coroplético ou bolhas).
+  - **Coroplético:** quantis da escala sequencial azul; com comparação, a **escala divergente vermelho ↔ verde por melhora** (`divergingColor`, conforme a direção da métrica). Contra a projeção não há valor por zona: o mapa mostra os valores, com aviso.
+  - **Bolhas:** no centróide, com a área proporcional ao valor (raio em escala de raiz, até 28 px), na cor da 1ª série (ou na divergente quando há comparação).
+  - **Tooltip** (deck.gl, com os tokens via `map/mapTooltip.css`): zona, distrito, valor e a variação **em texto** ("+12,5% melhorou"); os nomes são escapados.
+  - **Legenda** de vidro no canto superior esquerdo: quantis ("≤ mín … > máx"), divergente ("piora … melhora") ou, só com bolhas, "área ∝ métrica · maior: X".
+  - `BaseMap` ganhou **`ResizeObserver`** (o item do grid muda de tamanho sem resize da janela) e **gestos cooperativos** (Ctrl/⌘+roda para zoom, dois dedos no toque), para o mapa não capturar a rolagem da página.
+  - A atribuição do MapLibre fica compacta (só o "i"; expande no hover/foco). As atribuições também estão no rodapé.
+  - Camadas da amostra (calor, pontos, hexágonos) e arcos: #49.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.

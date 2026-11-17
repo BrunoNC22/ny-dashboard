@@ -4,10 +4,11 @@ import { setWorkerUrl } from "maplibre-gl";
 // MapLibre 6 resolves its worker relative to its own module URL, which Vite's dependency
 // pre-bundling moves: point it at the real file (served in dev, emitted as an asset in build).
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import {
   AttributionControl,
   Map,
+  type MapRef,
   NavigationControl,
 } from "react-map-gl/maplibre";
 
@@ -22,14 +23,38 @@ export interface BaseMapProps {
   /** Tilted 3D view (hexagons). */
   pitch?: number;
   className?: string;
+  /**
+   * Ctrl/⌘ + wheel to zoom and two fingers to pan on touch, so a map inside a scrolling page
+   * does not capture the page scroll (dashboard widgets).
+   */
+  cooperativeGestures?: boolean;
 }
 
 /**
  * Themed MapLibre basemap (OpenFreeMap) with attribution and zoom controls. If the basemap
  * cannot be loaded (offline), the data layers still render over a plain background.
  */
-export function BaseMap({ children, pitch = 0, className }: BaseMapProps) {
+export function BaseMap({
+  children,
+  pitch = 0,
+  className,
+  cooperativeGestures = false,
+}: BaseMapProps) {
   const { theme, style } = useMapTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MapRef>(null);
+  // Grid items resize without a window resize: follow the container.
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => {
+      mapRef.current?.resize();
+    });
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
   const fallback = {
     version: 8 as const,
     sources: {},
@@ -42,8 +67,13 @@ export function BaseMap({ children, pitch = 0, className }: BaseMapProps) {
     ],
   };
   return (
-    <div className={className ?? "h-full w-full overflow-hidden rounded-xl"}>
+    <div
+      ref={containerRef}
+      className={className ?? "h-full w-full overflow-hidden rounded-xl"}
+    >
       <Map
+        ref={mapRef}
+        cooperativeGestures={cooperativeGestures}
         initialViewState={{ ...NYC_VIEW, pitch }}
         mapStyle={style ?? fallback}
         attributionControl={false}

@@ -5,10 +5,12 @@ import {
   WIDGET_TYPES,
   type WidgetConfig,
 } from "@ny-dashboard/shared";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createQueryClient } from "../api/queryClient";
 import { useDashboardStore } from "../stores/dashboardStore";
 import { useUiStore } from "../stores/uiStore";
 import { WIDGET_REGISTRY } from "../widgets/registry";
@@ -202,8 +204,24 @@ describe("rendering", () => {
   });
 
   it("lazy-loads heavy widgets (map) behind a skeleton", async () => {
-    render(<WidgetRenderer widget={byId("map-zones")} breakpoint="desktop" />);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response("{}", { status: 503 }))),
+    );
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <WidgetRenderer widget={byId("map-zones")} breakpoint="desktop" />
+      </QueryClientProvider>,
+    );
     expect(screen.getByLabelText("Carregando")).toBeInTheDocument();
-    expect(await screen.findByText(/em construção/)).toBeInTheDocument();
+    // loaded on demand; without the API it ends in its error state
+    expect(
+      await screen.findByText(
+        "Não foi possível carregar",
+        {},
+        { timeout: 4000 },
+      ),
+    ).toBeInTheDocument();
+    vi.unstubAllGlobals();
   });
 });
