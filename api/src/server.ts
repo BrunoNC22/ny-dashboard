@@ -1,12 +1,16 @@
+import { join } from "node:path";
+
 import { createApp } from "./app";
 import { durationToMs, loadEnv } from "./config/env";
 import { createLogger } from "./lib/logger";
+import { ZONES_DIR } from "./lib/paths";
 import { createPrisma } from "./lib/prisma";
 import { createTokenService } from "./lib/tokens";
 import {
   createPrismaDashboardRepository,
   createPrismaPreferencesRepository,
 } from "./models/dashboardRepository";
+import { createPrismaDataRepository } from "./models/dataRepository";
 import { createPrismaUserRepository } from "./models/userRepository";
 
 const env = loadEnv();
@@ -24,7 +28,9 @@ const app = createApp({
     users: createPrismaUserRepository(prisma),
     dashboards: createPrismaDashboardRepository(prisma),
     preferences: createPrismaPreferencesRepository(prisma),
+    data: createPrismaDataRepository(prisma),
   },
+  zonesGeoJsonPath: join(ZONES_DIR, "taxi_zones.geojson"),
   onInvalidDashboard: (userId) => {
     logger.warn(
       { userId },

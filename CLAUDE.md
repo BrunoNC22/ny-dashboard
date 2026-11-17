@@ -376,6 +376,10 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Os contratos ficam em `shared` (`saveDashboardRequestSchema`, `dashboardResponseSchema`, `preferencesResponseSchema`).
   - Todas as rotas exigem sessão e só acessam os dados do próprio usuário.
   - Se o estado salvo ficar inválido (mudança futura de schema), o `GET` devolve o dashboard padrão e registra um aviso no log. Na falta de registro, o padrão é criado.
+- **Metadados (#22):**
+  - `GET /api/meta` e `GET /api/zones` são **públicos**, porque visitantes sem conta também usam o dashboard.
+  - O `/api/meta` lê a cobertura real do banco (período, início do backtest, fim da projeção, mês da amostra, pares serviço/empresa presentes) e devolve também os rótulos, as 265 zonas e o catálogo de métricas. Ele é calculado uma vez e fica em memória (os dados só mudam com o seed). Antes do seed, responde 503 `NO_DATA`.
+  - O `/api/zones` serve o GeoJSON (~500 KB) com `ETag` (sha1) e `Cache-Control: max-age=86400, must-revalidate`, e responde 304 quando o `If-None-Match` bate. A compressão gzip fica com o nginx em produção.
 
 ## 14. Roteiro
 

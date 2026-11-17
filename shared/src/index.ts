@@ -5,6 +5,7 @@ export * from "./defaults";
 export * from "./errors";
 export * from "./filters";
 export * from "./helpers";
+export * from "./meta";
 export * from "./preferences";
 export * from "./primitives";
 export * from "./queries";

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { join } from "node:path";
 
 import {
   createDefaultDashboard,
@@ -8,6 +9,7 @@ import { pino } from "pino";
 
 import { type AppDependencies, createApp } from "../app";
 import { conflict } from "../lib/errors";
+import { ZONES_DIR } from "../lib/paths";
 import { createTokenService } from "../lib/tokens";
 import type {
   DashboardRepository,
@@ -15,6 +17,11 @@ import type {
   StoredDashboard,
   StoredPreferences,
 } from "../models/dashboardRepository";
+import type {
+  DataCoverage,
+  DataRepository,
+  ZoneRow,
+} from "../models/dataRepository";
 import type { UserRecord, UserRepository } from "../models/userRepository";
 
 /** Logger that discards everything (keeps test output clean). */
@@ -75,12 +82,35 @@ export const createMemoryRepositories = () => {
     },
   };
 
+  const coverage: DataCoverage = {
+    firstDate: "2024-10-01",
+    lastDate: "2026-09-30",
+    backtestFrom: "2024-11-01",
+    projectionUntil: "2026-12-31",
+    sampleMonth: "2026-09",
+    companies: [
+      { service: "fhvhv", company: "lyft" },
+      { service: "fhvhv", company: "uber" },
+      { service: "green", company: "green" },
+      { service: "yellow", company: "yellow" },
+    ],
+  };
+  const zones: ZoneRow[] = [
+    { id: 132, name: "JFK Airport", borough: "queens" },
+    { id: 161, name: "Midtown Center", borough: "manhattan" },
+  ];
+  const dataRepository: DataRepository = {
+    getCoverage: () => Promise.resolve(structuredClone(coverage)),
+    listZones: () => Promise.resolve(structuredClone(zones)),
+  };
+
   return {
-    data: { users, dashboards, preferences },
+    data: { users, dashboards, preferences, coverage, zones },
     repositories: {
       users: userRepository,
       dashboards: dashboardRepository,
       preferences: preferencesRepository,
+      data: dataRepository,
     },
   };
 };
@@ -101,6 +131,7 @@ export const createTestApp = (overrides: Partial<AppDependencies> = {}) => {
     tokens: createTokenService(TEST_JWT_SECRET, "1h"),
     cookie: { secure: false, maxAgeMs: 3_600_000 },
     repositories: memory.repositories,
+    zonesGeoJsonPath: join(ZONES_DIR, "taxi_zones.geojson"),
     ...overrides,
   };
   return { app: createApp(deps), deps, data: memory.data };

@@ -150,3 +150,14 @@ describe("dimension labels", () => {
     expect(dimensionValueLabel("company", "unknown-co")).toBe("unknown-co");
   });
 });
+
+describe("meta contract", () => {
+  it("accepts every catalog metric as a serializable definition", async () => {
+    const { metricDefinitionSchema } = await import("../meta");
+    for (const id of METRIC_IDS) {
+      expect(metricDefinitionSchema.safeParse(METRICS[id]).success, id).toBe(
+        true,
+      );
+    }
+  });
+});
