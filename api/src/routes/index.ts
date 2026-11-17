@@ -10,10 +10,7 @@ import {
 } from "../controllers/dashboardController";
 import { getHealth } from "../controllers/healthController";
 import { createMetaController } from "../controllers/metaController";
-import {
-  createQueryController,
-  querySchemas,
-} from "../controllers/queryController";
+import { createQueryController } from "../controllers/queryController";
 import type { TokenService } from "../lib/tokens";
 import { createAuthMiddlewares } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
@@ -29,9 +26,11 @@ import {
   createDashboardService,
   createPreferencesService,
 } from "../services/dashboardService";
+import { createKpiService } from "../services/kpiService";
 import { createMetaService } from "../services/metaService";
 import { createTimeseriesService } from "../services/timeseriesService";
 import { createAuthRouter } from "./auth";
+import { createQueryRouter } from "./query";
 
 /** Everything the routes need (real implementations in server.ts, fakes in unit tests). */
 export interface ApiDependencies {
@@ -73,14 +72,11 @@ export const createApiRouter = (deps: ApiDependencies): Router => {
   router.get("/meta", metaController.getMeta);
   router.get("/zones", metaController.getZones);
 
-  const queryController = createQueryController(
-    createTimeseriesService(queries),
-  );
-  router.post(
-    "/query/timeseries",
-    validate(querySchemas.timeseries),
-    queryController.timeseries,
-  );
+  const queryController = createQueryController({
+    timeseries: createTimeseriesService(queries),
+    kpi: createKpiService(queries),
+  });
+  router.use("/query", createQueryRouter(queryController));
   router.use("/auth", createAuthRouter(authController, auth));
 
   router.get("/dashboard", auth.requireAuth, dashboardController.getDashboard);

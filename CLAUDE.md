@@ -391,6 +391,15 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - A resposta inclui `unit` e `notices`.
   - O SQL é montado com identificadores de whitelist e valores parametrizados (`models/queryRepository.ts`). Nos testes de unidade, `__tests__/memoryQueries.ts` replica a semântica em memória.
   - Desempenho no banco local: mês × mês anterior com projeção em ~0,16 s; 24 meses por hora para 4 empresas (70 mil pontos, 2 MB) em ~0,5 s.
+- **KPI (#24, `POST /api/query/kpi`, pública):**
+  - Devolve valor, comparação (`range`, `value`, `deltaAbs`, `deltaPct`), meta, status e sparkline.
+  - A sparkline é diária em períodos de até 124 dias e semanal acima disso.
+  - **Status** (`api/src/lib/kpiStatus.ts`):
+    - comparação: uma melhora, já com o sinal da direção, ≥ `neutralBandPct` é **bom**; uma piora desse tamanho é **ruim**; o que fica no meio é **atenção** (estável);
+    - meta: atingir é **bom**; errar por até `warningBandPct` é **atenção**; mais que isso é **ruim**;
+    - com as duas regras, vale **a pior**. Sem regras ou sem dados, o status é **neutro**.
+  - A comparação com projeção fica indisponível com filtro de empresa ou zona (`comparison: null`).
+  - Com os dados reais, o dashboard padrão mostra 2 KPIs bons, 2 em atenção e 2 ruins em set/2026.
 
 ## 14. Roteiro
 
