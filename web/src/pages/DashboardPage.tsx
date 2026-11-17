@@ -5,6 +5,7 @@ import { AppHeader } from "../components/shell/AppHeader";
 import { useHistoryShortcuts } from "../components/shell/useHistoryShortcuts";
 import { Skeleton } from "../components/ui";
 import { useDashboardSync } from "../stores/useDashboardSync";
+import { WidgetGallery } from "../widgets/WidgetGallery";
 import { WidgetRenderer } from "../widgets/WidgetRenderer";
 
 /** The dashboard: shell + grid. Each widget renders through the registry (#40). */
@@ -31,6 +32,7 @@ export function DashboardPage() {
         )}
       </main>
       <AppFooter />
+      <WidgetGallery />
     </div>
   );
 }

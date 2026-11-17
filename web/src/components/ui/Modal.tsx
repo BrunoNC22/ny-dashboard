@@ -98,7 +98,7 @@ export function Modal({
           SIZES[size],
         )}
       >
-        <header className="flex items-start gap-3 border-b border-border px-5 py-4">
+        <div className="flex items-start gap-3 border-b border-border px-5 py-4">
           <div className="min-w-0 flex-1">
             <h2 id={titleId} className="text-base font-semibold text-ink">
               {title}
@@ -115,7 +115,7 @@ export function Modal({
             size="sm"
             onClick={onClose}
           />
-        </header>
+        </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {children}
         </div>

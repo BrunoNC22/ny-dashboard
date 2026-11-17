@@ -27,6 +27,7 @@ beforeEach(() => {
     ),
   );
   localStorage.clear();
+  useUiStore.setState({ galleryOpen: false, editingWidgetId: null });
   useDashboardStore.setState({
     state: createDefaultDashboard(),
     past: [],
