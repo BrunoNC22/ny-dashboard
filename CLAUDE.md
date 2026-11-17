@@ -142,7 +142,7 @@ Descartar corridas com: tarifa negativa; distância ≤ 0; duração ≤ 0 ou > 
 ### 5.6 Tabelas agregadas (snapshot)
 
 1. **Diário × zona de embarque × serviço × empresa** → todas as métricas base somáveis.
-2. **Hora × serviço × empresa** → métricas base (usado em séries horárias e no heatmap hora × dia da semana). São ~17,5 mil pontos por série em 24 meses.
+2. **Hora × serviço × empresa** → métricas base (séries horárias e cortes por hora do dia × dia da semana). São ~17,5 mil pontos por série em 24 meses.
 3. **Mês × origem → destino × serviço × empresa** → apenas as **top N rotas** por mês (para os arcos do mapa e a tabela de rotas).
 4. **Amostra de corridas individuais:** ~**1 milhão** de corridas de **set/2026** (último mês), dos 3 serviços (proporcional ao volume, com piso por serviço). Alimenta os widgets scatter/bubble e a camada de pontos do mapa.
 5. **Zonas:** GeoJSON WGS84 simplificado + lookup (zona, distrito, `service_zone`).
@@ -239,7 +239,7 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
 | GET | `/api/zones` | GeoJSON das zonas (com cache/ETag) |
 | POST | `/api/query/timeseries` | série temporal (métrica, granularidade, intervalo, filtros, agrupamento, comparação, projeção) |
 | POST | `/api/query/kpi` | valor, valor comparado, variação, meta, status |
-| POST | `/api/query/breakdown` | agregação por dimensão (pizza, radar, barras, tabela, heatmap) |
+| POST | `/api/query/breakdown` | agregação por dimensão (pizza, radar, barras, tabela) |
 | POST | `/api/query/map` | valores por zona (com variação), fluxos origem→destino, pontos da amostra |
 | POST | `/api/query/trips` | pontos da amostra de corridas para scatter/bubble |
 
@@ -268,7 +268,36 @@ Todos os payloads são validados com schemas zod de `shared`. Fluxo MVC: `routes
 - Antes de commitar: lint, typecheck e testes passando.
 - Toda decisão nova vai para este arquivo.
 
-## 13. Histórico de decisões
+## 13. Decisões técnicas derivadas (sujeitas a veto)
+
+Detalhes de implementação decididos pelo agente a partir das decisões acima. Não foram perguntados um a um. Se o dono do projeto discordar, mude aqui e nas issues.
+
+- Contexto de build dos Dockerfiles é a raiz do monorepo, para incluir `shared/` e o lockfile.
+- O snapshot e o GeoJSON das zonas ficam em `api/data/`, e o ETL em `api/etl/`, porque o seed roda dentro do container da api.
+- O snapshot é dividido em chunks de até 45 MB (o limite do GitHub é 100 MB por arquivo).
+- A amostra de corridas é proporcional ao volume de cada serviço, com um piso por serviço (para o Green não sumir).
+- O "V" do MVC numa API JSON são os serializers/DTOs em `src/views/`.
+- O Holt-Winters é aditivo, com α/β/γ otimizados por erro (SSE).
+- O drag acontece pelo cabeçalho do widget (para não brigar com a rolagem no toque); o resize é pelo canto.
+- Não existe widget de "heatmap hora × dia da semana" no Chart.js, porque não estava na lista aprovada. Cortes por hora e dia usam radar ou barras.
+- A label extra `data` foi criada para as issues de ETL, snapshot e projeção.
+
+## 14. Roteiro
+
+O backlog completo está nas [issues do GitHub](https://github.com/BrunoNC22/ny-dashboard/issues), em 6 milestones. Cada issue lista as issues de que depende.
+
+| Milestone | Issues | Conteúdo |
+|---|---|---|
+| M0 — Fundação | #1–#5 | monorepo, lint, shared, vitest, CI básico |
+| M1 — Dados (ETL) | #6–#12 | zonas, ETL DuckDB, agregados, amostra, snapshot |
+| M2 — API | #13–#28 | Express MVC, Prisma, catálogo, dashboard padrão, Holt-Winters, seed, auth, endpoints, integração |
+| M3 — Web base | #29–#39 | bootstrap, design system, chartTheme, mapTheme, client, auth UI, store, grid, shell, filtros, preferências |
+| M4 — Widgets | #40–#49 | infra de widgets, galeria, editor, gráficos, KPI, tabela, mapa |
+| M5 — Entrega | #50–#55 | Dockerfiles, compose, E2E, CI completo, README |
+
+As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
+
+## 15. Histórico de decisões
 
 | Data | Decisão |
 |---|---|
