@@ -372,6 +372,14 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - **Radar:** uma série, com o período comparado tracejado. **Ranking:** barras de uma cor só, com o período comparado como barra-fantasma.
   - Ranking e radar **não mostram "Outros"** (a soma do resto achataria o ranking).
   - O rótulo do período comparado é calculado no cliente com as **mesmas funções da API**: `previousPeriod`, `previousYear` e `comparisonRange` foram movidas de `api/src/lib/periods.ts` para `shared/src/periods.ts`. A API reexporta de lá.
+- **Scatter e bubble (#45, `web/src/widgets/sample`, carregados sob demanda):**
+  - Um dataset por categoria (serviço ou empresa), no slot fixo por entidade, com **forma como segundo canal** (`pointStyle`). A legenda mostra a contagem de cada uma.
+  - **Scatter com `parsing: false`:** nesse modo o Chart.js **assume dados ordenados por x** (pega o mínimo e o máximo do eixo no primeiro e no último ponto e usa busca binária para desenhar). A amostra não vem ordenada, e sem ordenar sumiam pontos e o eixo saía errado. Por isso `toSampleDatasets` ordena cada dataset por x.
+  - **Bubble com o parsing normal:** com `parsing: false` o Chart.js ignora o `r` (espera o raio interno `_custom`) e usa o raio global de ponto, que é 0. O raio usa escala de raiz (área ∝ valor), de 1 a 12 px.
+  - Sem animação; pontos menores conforme o volume. **Acima de 100 mil pontos o hover é desligado** (a busca do ponto mais próximo a cada movimento travaria), com selo "pesado" e aviso de que o Chart.js fica lento de propósito (§8).
+  - O widget mostra o número de corridas e o **tempo de desenho medido** por um plugin (`beforeInit` → primeiro `afterRender`). No Chromium headless aparece 0 ms por causa do tempo virtual.
+  - Avisos: posição aproximada (a TLC não publica coordenadas) e período fora do mês da amostra.
+  - Verificado no navegador: JFK (21 mil pontos), bolhas no LaGuardia e a amostra completa (1 milhão).
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
