@@ -303,6 +303,16 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Usuário: 3 a 32 caracteres `[a-z0-9._-]`, convertido para minúsculas. Senha: de 8 caracteres a 72 bytes (o bcrypt ignora o que passa disso).
 - **Rotas origem → destino (#10):** são guardadas as **500 rotas mais frequentes por mês × serviço × empresa × distrito de embarque** (não um top N global). Os pares do FHVHV são muito dispersos (o top 1.000 global cobre só ~33% das corridas da Uber), e um ranking global apagaria as rotas de distritos pequenos quando o filtro de distrito fosse usado. Isso dá umas 250 mil linhas em 24 meses.
 - **Amostra de corridas (#11):** o piso por serviço é **50 mil corridas** (o Green tem só ~44 mil em set/2026 e entra inteiro), e o restante é proporcional (resultado: Yellow ~176 mil, FHVHV ~780 mil). A seleção é determinística, por hash da corrida. As corridas com embarque nas zonas 264/265, que não têm geometria, ficam com coordenadas NULL, e o mapa as ignora.
+- **API base (#13):**
+  - Logs com **pino** + `pino-http`: JSON em produção, `pino-pretty` em desenvolvimento.
+  - Erros: lançar `AppError(status, code, message, details?)` (há helpers em `src/lib/errors.ts`). O `errorHandler` converte os erros no corpo padrão `{ error: { code, message, details } }`:
+    - erros do zod → 400 `VALIDATION_ERROR` (com `path`/`message`);
+    - JSON inválido → 400 `INVALID_JSON`;
+    - erros inesperados → 500 `INTERNAL_ERROR`, sem vazar a mensagem.
+  - Validação com o middleware `validate({ body, query, params })`, que guarda os valores validados em `res.locals.validated` (o Express 5 não deixa sobrescrever `req.query`). O controller lê com `validated(res, schemas)`.
+  - `app.ts` monta o app sem escutar porta (os testes usam supertest); `server.ts` sobe o servidor.
+  - Fora de produção, o `.env` da raiz é carregado com `process.loadEnvFile`.
+- **jsdom fixado em 29.1.1:** o 30.x e o 31.x exigem Node ≥ 24.15, e a máquina de desenvolvimento usa 24.14.1. Quando atualizar o Node local, dá para subir o jsdom.
 
 ## 14. Roteiro
 
@@ -323,6 +333,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | API (#13): Express 5 + pino; padrão de erros e de validação descritos na §13.                                                                                                                                                                                 |
 | 2026-11-17 | ETL (#8): agregados acumulados em `etl.duckdb`. Durante as #8 a #12, os parquets dos 24 meses (~14 GB) ficam em cache (`--keep-cache`) para reprocessar sem baixar de novo. **O cache deve ser apagado ao fim da #12.**                                       |
 | 2026-11-17 | ETL (#7): download sequencial com retry e remoção depois do processamento (sem leitura remota); novas regras de limpeza (tarifa > US$ 1.000, velocidade > 80 mph); % cartão = cartão ÷ (cartão + dinheiro).                                                   |
 | 2026-11-17 | Zonas: mapshaper (0.7.x) em vez de DuckDB spatial para gerar o GeoJSON (#6), porque simplifica preservando a topologia.                                                                                                                                       |
