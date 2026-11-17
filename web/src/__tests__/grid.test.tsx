@@ -6,7 +6,6 @@ import { DashboardGrid } from "../components/grid/DashboardGrid";
 import {
   breakpointForWidth,
   fromGridLayout,
-  MIN_SIZE,
   toGridLayouts,
 } from "../components/grid/gridConfig";
 import { useDashboardStore } from "../stores/dashboardStore";
@@ -22,11 +21,14 @@ describe("grid config", () => {
     expect(breakpointForWidth(360)).toBe("mobile");
   });
 
-  it("round-trips store layouts through RGL layouts", () => {
-    const { layouts } = createDefaultDashboard();
-    const grid = toGridLayouts(layouts);
-    expect(grid.desktop[0]).toMatchObject(MIN_SIZE.desktop);
-    expect(grid.mobile[0]).toMatchObject(MIN_SIZE.mobile);
+  it("round-trips store layouts through RGL layouts with per-type min sizes", () => {
+    const state = createDefaultDashboard();
+    const { layouts } = state;
+    const grid = toGridLayouts(state);
+    const kpi = grid.desktop.find((i) => i.i === "kpi-trips");
+    const map = grid.mobile.find((i) => i.i === "map-zones");
+    expect(kpi).toMatchObject({ minW: 2, minH: 3 });
+    expect(map).toMatchObject({ minW: 2, minH: 6 });
     expect(fromGridLayout(grid.desktop)).toEqual(layouts.desktop);
     expect(fromGridLayout(grid.mobile)).toEqual(layouts.mobile);
   });

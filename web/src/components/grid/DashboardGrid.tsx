@@ -38,7 +38,7 @@ export function DashboardGrid({
   const state = useDashboardStore((s) => s.state);
   const updateLayout = useDashboardStore((s) => s.updateLayout);
   const breakpoint = breakpointForWidth(width);
-  const layouts = useMemo(() => toGridLayouts(state.layouts), [state.layouts]);
+  const layouts = useMemo(() => toGridLayouts(state), [state]);
 
   const commit = (layout: Layout) => {
     updateLayout(breakpoint, fromGridLayout(layout));

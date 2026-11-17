@@ -323,6 +323,18 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - **Serviço / empresa / distrito:** listas de `/api/meta`. Marcar todas as opções equivale a "Todos" (lista vazia). A empresa **só fica habilitada quando os apps (FHVHV) estão incluídos**; as opções são as empresas dos serviços selecionados (ex.: Yellow + apps → Yellow, Uber, Lyft), e mudar os serviços remove as empresas que deixaram de valer. `COMPANY_SERVICE` (no `shared`) mapeia empresa → serviço.
   - Sem `/api/meta` (carregando ou API fora do ar), as opções vêm do catálogo do `shared` e do `DATA_COVERAGE`.
   - No mobile, o header deixa de ser fixo (os filtros ocupam até 4 linhas) e o chip sem filtro mostra o nome do filtro em vez de "Todos". Os popovers viram painéis com a largura da tela.
+- **Infra de widgets (#40, `web/src/widgets`):**
+  - `WIDGET_REGISTRY`: para cada tipo, rótulo pt-BR, ícone lucide, grupo da galeria, tamanho padrão e mínimo por breakpoint e o componente. O grid usa os mínimos do registro.
+  - **Mapa, scatter e bubble são `lazy`** (MapLibre/deck.gl e a amostra de 1 milhão não entram no bundle inicial); o `Suspense` mostra o skeleton.
+  - `resolveWidgetFilters(global, overrides)`: cada campo do override (período, comparação, serviço, empresa, distrito) substitui o global; **uma lista vazia no override também conta** ("todos", ignorando o global). Zona só existe no widget.
+  - `WidgetFrame`:
+    - o cabeçalho é o drag handle, com ícone do tipo, título e um badge com o número de filtros próprios (tooltip lista quais);
+    - **desktop:** editar, duplicar e remover flutuam sobre o cabeçalho no hover/foco, para os títulos não perderem espaço;
+    - **mobile:** só o lápis; duplicar e remover ficam no modal de edição (#42), porque um popover dentro do item do grid seria cortado;
+    - remover mostra um toast lembrando que Ctrl+Z desfaz.
+  - `WidgetBody`: estados de carregando (skeleton), erro (com "Tentar de novo"), sem dados e "não se aplica".
+  - Cada widget tem um error boundary próprio, que se recupera quando a configuração muda.
+  - Os tipos ainda não implementados usam `PlaceholderWidget`, substituído tipo a tipo nas #43 a #49.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
