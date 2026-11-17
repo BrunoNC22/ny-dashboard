@@ -354,6 +354,18 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - Aba **Filtros**: cada filtro tem um switch "próprio". Ligado, começa do valor global atual; desligado, o widget volta a seguir o global. A zona tem um seletor com busca.
   - Salvar valida com o `widgetConfigSchema` (o botão fica desabilitado com a mensagem do erro) e entra no desfazer como um passo só. Cancelar descarta o rascunho.
   - O rodapé tem **Duplicar** e **Remover**, que são o caminho no mobile.
+- **Widgets de série temporal (#43, `web/src/widgets/series`):** linha, área, barras e barras empilhadas num só componente (`TimeSeriesWidget`).
+  - **Request** (`toSeriesQuery`):
+    - por hora não há projeção (a comparação "projeção" vira "sem comparação", com aviso);
+    - por hora com filtro de distrito ou zona o widget explica e não consulta (a API responderia 400);
+    - a projeção sobreposta é omitida quando a comparação já é a projeção.
+  - **Tempo:** os timestamps de NY viram a mesma hora de parede no fuso do navegador, então o eixo mostra o horário de NY em qualquer fuso.
+  - **Comparação:** tracejada e alinhada pelo início do período (dia 1 com dia 1), com a data original no tooltip. O eixo x fica limitado ao período atual (agosto com 31 dias não estica setembro). Barras empilhadas comparam com o total somado.
+  - **Projeção:** pontilhada. Na comparação "projeção × real" com uma série só, os dias com **desvio ≥ 10%** ganham um ponto na cor de status (melhor/pior conforme a direção da métrica) e o desvio aparece no tooltip.
+  - Quando há comparação, uma linha de resumo mostra o total do período, o total comparado e o `DeltaBadge` (ícone + texto + cor pela direção).
+  - **Volume:** acima de 1.000 pontos, `largeDataOptions` (sem animação, `parsing: false`, LTTB). O eixo de tempo escolhe a unidade sozinho (`timeScale(..., { auto: true })`), então 24 meses por hora têm ticks mensais. Verificado com a série horária de 24 meses (17,5 mil pontos).
+  - **Cor fixa por entidade** (`widgets/categoryOrder.ts`): a cor segue a entidade, não a posição na resposta. As ordens são: apps, Yellow, Green (serviço); Uber, Lyft, Yellow, Green, Outras (empresa); a ordem de `BOROUGHS` (distrito). Filtrar uma empresa não repinta as outras, e a legenda segue a mesma ordem.
+  - `WidgetNotices` mostra os avisos da API e do widget.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.

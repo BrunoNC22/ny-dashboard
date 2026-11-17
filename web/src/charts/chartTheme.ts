@@ -276,12 +276,19 @@ export const largeDataOptions = (points: number) =>
         },
       } as const);
 
-/** Time x axis with pt-BR formats per granularity. */
-export const timeScale = (unit: "hour" | "day" | "week" | "month") => ({
+/**
+ * Time x axis with pt-BR formats per granularity. `auto` lets Chart.js pick the tick unit
+ * (never finer than the granularity): 24 months of hourly data get monthly ticks, not 17k.
+ */
+export const timeScale = (
+  unit: "hour" | "day" | "week" | "month",
+  { auto = false }: { auto?: boolean } = {},
+) => ({
   type: "time" as const,
   adapters: { date: { locale: ptBR } },
   time: {
-    unit,
+    unit: auto ? (false as const) : unit,
+    minUnit: unit,
     isoWeekday: true,
     tooltipFormat:
       unit === "hour"
@@ -294,6 +301,8 @@ export const timeScale = (unit: "hour" | "day" | "week" | "month") => ({
       day: "dd/MM",
       week: "dd/MM",
       month: "MMM yy",
+      quarter: "MMM yy",
+      year: "yyyy",
     },
   },
   ticks: { maxRotation: 0, autoSkipPadding: 16 },
@@ -339,7 +348,9 @@ export const glowPlugin: Plugin = {
 };
 
 /** Vertical crosshair at the hovered x (line/area charts). */
-export const crosshairPlugin = (theme: ChartTheme): Plugin => ({
+export const crosshairPlugin = <T extends ChartType = ChartType>(
+  theme: ChartTheme,
+): Plugin<T> => ({
   id: "nydCrosshair",
   afterDatasetsDraw(chart) {
     const active = chart.tooltip?.getActiveElements();

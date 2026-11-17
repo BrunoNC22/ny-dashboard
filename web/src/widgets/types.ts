@@ -1,5 +1,6 @@
 import type {
   Breakpoint,
+  WidgetConfig,
   WidgetConfigOf,
   WidgetType,
 } from "@ny-dashboard/shared";
@@ -8,14 +9,20 @@ import type { ComponentType } from "react";
 
 import type { EffectiveFilters } from "./resolveFilters";
 
-export interface WidgetProps<T extends WidgetType = WidgetType> {
-  widget: WidgetConfigOf<T>;
+/** Props of a widget body for a given config shape (covariant in the config). */
+export interface WidgetBodyProps<C extends WidgetConfig = WidgetConfig> {
+  widget: C;
   /** Global filters merged with the widget's overrides. */
   filters: EffectiveFilters;
   breakpoint: Breakpoint;
   /** Rendered inside the editor preview (#42). */
   preview?: boolean;
 }
+
+/** `WidgetProps<"line" | "area">`: props for the widget types given. */
+export type WidgetProps<T extends WidgetType = WidgetType> = WidgetBodyProps<
+  WidgetConfigOf<T>
+>;
 
 export interface GridSize {
   w: number;

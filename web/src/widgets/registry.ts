@@ -22,6 +22,7 @@ import {
 } from "react";
 
 import { PlaceholderWidget } from "./PlaceholderWidget";
+import { TimeSeriesWidget } from "./series/TimeSeriesWidget";
 import type { GridSize, WidgetDefinition, WidgetProps } from "./types";
 
 type Sizes = Readonly<Record<Breakpoint, GridSize>>;
@@ -77,7 +78,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: ChartLine,
     group: "series",
     sizes: SERIES,
-    component: placeholder(),
+    component: TimeSeriesWidget,
   },
   area: {
     type: "area",
@@ -85,7 +86,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: ChartArea,
     group: "series",
     sizes: SERIES,
-    component: placeholder(),
+    component: TimeSeriesWidget,
   },
   bar: {
     type: "bar",
@@ -93,7 +94,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: ChartColumn,
     group: "series",
     sizes: SERIES,
-    component: placeholder(),
+    component: TimeSeriesWidget,
   },
   stacked_bar: {
     type: "stacked_bar",
@@ -101,7 +102,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: ChartColumnStacked,
     group: "series",
     sizes: SERIES,
-    component: placeholder(),
+    component: TimeSeriesWidget,
   },
   doughnut: {
     type: "doughnut",
