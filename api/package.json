@@ -13,12 +13,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "etl:zones": "tsx etl/zones.ts"
+    "etl:zones": "tsx etl/zones.ts",
+    "etl": "tsx etl/index.ts"
   },
   "dependencies": {
     "@ny-dashboard/shared": "workspace:*"
   },
   "devDependencies": {
+    "@duckdb/node-api": "2.0.0-r.1",
     "@vitest/coverage-v8": "5.1.0",
     "mapshaper": "0.7.101",
     "tsx": "4.23.15",

@@ -113,34 +113,34 @@ Fluxo esperado de quem clona o repo: `docker compose up` → abre o navegador �
 
 ### 5.3 Pipeline (ETL → snapshot → seed)
 
-1. `pnpm etl` (em `api/`) usa DuckDB para ler os parquets via HTTP (lendo só as colunas necessárias), normalizar, limpar e agregar.
+1. `pnpm etl` (em `api/`) **baixa cada parquet com um único GET, um arquivo por vez** (com retry e backoff exponencial), e o DuckDB normaliza, limpa e agrega localmente. Cada arquivo é **apagado depois de processado** (`--keep-cache` mantém). A leitura remota com requisições paralelas por faixa de bytes fez o CloudFront da TLC bloquear o IP, por isso não é usada.
 2. O resultado é um **snapshot agregado versionado no repo**, em `api/data/snapshot/` (CSV gzip, em chunks de **≤ 45 MB** cada, por causa do limite de 100 MB por arquivo do GitHub), com um `manifest.json` contendo o período, contagens de linhas, checksums e a data de geração.
 3. O **seed** carrega o snapshot no Postgres (via `COPY`, por desempenho). O seed funciona **offline**, sem baixar nada.
 4. **Atualização mensal: manual.** Rodar `pnpm etl` e commitar o snapshot novo. (Sem GitHub Action agendado.)
 
 ### 5.4 Normalização entre serviços
 
-| Métrica base (somável)                     | Yellow / Green                                         | FHVHV                                                                                                            |
-| ------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `trips`                                    | contagem                                               | contagem                                                                                                         |
-| `passengers`                               | `passenger_count`                                      | **não se aplica**                                                                                                |
-| `revenue` (**total pago pelo passageiro**) | `total_amount`                                         | `base_passenger_fare + tolls + bcf + sales_tax + congestion_surcharge + airport_fee + tips + cbd_congestion_fee` |
-| `fare`                                     | `fare_amount`                                          | `base_passenger_fare`                                                                                            |
-| `tips`                                     | `tip_amount` (obs.: só gorjeta em cartão é registrada) | `tips`                                                                                                           |
-| `distance_mi`                              | `trip_distance`                                        | `trip_miles`                                                                                                     |
-| `duration_s`                               | dropoff − pickup                                       | `trip_time`                                                                                                      |
-| `airport_trips`                            | PU ou DO nas zonas 1 (EWR), 132 (JFK), 138 (LGA)       | idem                                                                                                             |
-| `card_trips` / `cash_trips`                | `payment_type` 1 / 2                                   | **não se aplica**                                                                                                |
-| `cbd_fee`                                  | `cbd_congestion_fee` (existe a partir de jan/2025)     | idem                                                                                                             |
-| `wait_s`                                   | **não se aplica**                                      | pickup − request                                                                                                 |
-| `driver_pay`                               | **não se aplica**                                      | `driver_pay`                                                                                                     |
-| `shared_trips`                             | **não se aplica**                                      | `shared_match_flag = 'Y'`                                                                                        |
+| Métrica base (somável)                     | Yellow / Green                                                                        | FHVHV                                                                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `trips`                                    | contagem                                                                              | contagem                                                                                                         |
+| `passengers`                               | `passenger_count`                                                                     | **não se aplica**                                                                                                |
+| `revenue` (**total pago pelo passageiro**) | `total_amount`                                                                        | `base_passenger_fare + tolls + bcf + sales_tax + congestion_surcharge + airport_fee + tips + cbd_congestion_fee` |
+| `fare`                                     | `fare_amount`                                                                         | `base_passenger_fare`                                                                                            |
+| `tips`                                     | `tip_amount` (obs.: só gorjeta em cartão é registrada)                                | `tips`                                                                                                           |
+| `distance_mi`                              | `trip_distance`                                                                       | `trip_miles`                                                                                                     |
+| `duration_s`                               | dropoff − pickup                                                                      | `trip_time`                                                                                                      |
+| `airport_trips`                            | PU ou DO nas zonas 1 (EWR), 132 (JFK), 138 (LGA)                                      | idem                                                                                                             |
+| `card_trips` / `cash_trips`                | `payment_type` 1 / 2 (0 = Flex Fare, preço fixo pelo app: ~31% do Yellow em set/2026) | **não se aplica**                                                                                                |
+| `cbd_fee`                                  | `cbd_congestion_fee` (existe a partir de jan/2025)                                    | idem                                                                                                             |
+| `wait_s`                                   | **não se aplica**                                                                     | pickup − request                                                                                                 |
+| `driver_pay`                               | **não se aplica**                                                                     | `driver_pay`                                                                                                     |
+| `shared_trips`                             | **não se aplica**                                                                     | `shared_match_flag = 'Y'`                                                                                        |
 
 Métricas que não existem num serviço aparecem na UI como **"não se aplica"**.
 
 ### 5.5 Regras de limpeza (no ETL)
 
-Descartar corridas com: tarifa negativa; distância ≤ 0; duração ≤ 0 ou > 3h; pickup fora do mês do arquivo; zona de embarque inválida.
+Descartar corridas com: zona de embarque inválida (NULL ou fora de 1–265; 264/265 são mantidas); pickup fora do mês do arquivo; tarifa negativa; **tarifa > US$ 1.000**; distância ≤ 0; duração ≤ 0 ou > 3h; **velocidade implícita > 80 mph**. As duas regras em negrito foram adicionadas na #7, depois de medir set/2026: distâncias absurdas (até 232.644 mi) faziam a velocidade média do Yellow ir de 11,7 para 16,6 mph, e a do Green de 12,3 para 32,6 mph. Também havia uma tarifa de US$ 9.999 numa corrida de 1 minuto. O schema normalizado completo está em `api/etl/README.md`.
 
 ### 5.6 Tabelas agregadas (snapshot)
 
@@ -156,7 +156,7 @@ Descartar corridas com: tarifa negativa; distância ≤ 0; duração ≤ 0 ou > 
 
 - **Volume:** corridas, passageiros.
 - **Financeiro:** receita total, tarifa média, gorjeta média, % de gorjeta, receita por milha, taxa de congestionamento (CBD) arrecadada.
-- **Operação:** distância média, duração média, velocidade média, % de corridas de aeroporto, % cartão × dinheiro.
+- **Operação:** distância média, duração média, velocidade média, % de corridas de aeroporto, % cartão × dinheiro (**% cartão = cartão ÷ (cartão + dinheiro)**; Flex Fare, contestação e outros ficam de fora do denominador).
 - **FHVHV:** tempo médio de espera, % da tarifa que vai para o motorista, % de corridas compartilhadas.
 - **Cortes (dimensões):** serviço, empresa, distrito (borough), zona, hora do dia, dia da semana.
 
@@ -320,6 +320,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | ETL (#7): download sequencial com retry e remoção depois do processamento (sem leitura remota); novas regras de limpeza (tarifa > US$ 1.000, velocidade > 80 mph); % cartão = cartão ÷ (cartão + dinheiro).                                                   |
 | 2026-11-17 | Zonas: mapshaper (0.7.x) em vez de DuckDB spatial para gerar o GeoJSON (#6), porque simplifica preservando a topologia.                                                                                                                                       |
 | 2026-11-17 | Contratos zod do `shared` (#3), com as decisões derivadas listadas na §13.                                                                                                                                                                                    |
 | 2026-11-17 | Lint: ESLint 10 + `@eslint-react` (em vez do `eslint-plugin-react`) e `simple-import-sort` (em vez do `import-x`). `typescript-eslint` fixado em 8.72.2 por causa do `minimumReleaseAge`.                                                                     |
