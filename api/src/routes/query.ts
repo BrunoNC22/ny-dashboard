@@ -20,5 +20,6 @@ export const createQueryRouter = (controller: QueryController): Router => {
     validate(querySchemas.breakdown),
     controller.breakdown,
   );
+  router.post("/map", validate(querySchemas.map), controller.map);
   return router;
 };

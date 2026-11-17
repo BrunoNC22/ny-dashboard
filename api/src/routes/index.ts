@@ -28,6 +28,7 @@ import {
   createPreferencesService,
 } from "../services/dashboardService";
 import { createKpiService } from "../services/kpiService";
+import { createMapService } from "../services/mapService";
 import { createMetaService } from "../services/metaService";
 import { createTimeseriesService } from "../services/timeseriesService";
 import { createAuthRouter } from "./auth";
@@ -90,6 +91,7 @@ export const createApiRouter = (deps: ApiDependencies): Router => {
     timeseries: createTimeseriesService(queries),
     kpi: createKpiService(queries),
     breakdown: createBreakdownService(queries, loadZoneNames),
+    map: createMapService(queries),
   });
   router.use("/query", createQueryRouter(queryController));
   router.use("/auth", createAuthRouter(authController, auth));

@@ -57,7 +57,23 @@ export interface OdFixture {
   sums: Sums;
 }
 
+export interface SampleFixture {
+  pickupAt: string;
+  service: Service;
+  company: Company;
+  zone: number;
+  lon: number | null;
+  lat: number | null;
+  distance: number;
+  duration: number;
+  fare: number;
+  tips: number;
+  revenue: number;
+  wait: number | null;
+}
+
 export interface QueryFixtures {
+  sample?: SampleFixture[];
   od?: OdFixture[];
   daily?: DailyFixture[];
   hourly?: HourlyFixture[];
@@ -268,5 +284,23 @@ export const createMemoryQueryRepository = (
       )
       .map((row) => ({ keys: [row[dimension]], sums: row.sums }));
     return Promise.resolve(aggregateKeyed(items, columns));
+  },
+  samplePoints({ range, filters, colorBy }) {
+    const rows = (fixtures.sample ?? []).filter(
+      (row) =>
+        row.lon !== null &&
+        row.lat !== null &&
+        row.pickupAt.slice(0, 10) >= range.from &&
+        row.pickupAt.slice(0, 10) <= range.to &&
+        filters.services.includes(row.service) &&
+        includes(filters.companies, row.company) &&
+        includes(filters.boroughs, ZONE_BOROUGH[row.zone] ?? "unknown") &&
+        includes(filters.zones, row.zone),
+    );
+    return Promise.resolve({
+      lon: rows.map((row) => row.lon ?? 0),
+      lat: rows.map((row) => row.lat ?? 0),
+      category: rows.map((row) => row[colorBy]),
+    });
   },
 });

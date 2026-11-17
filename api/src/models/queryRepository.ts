@@ -1,6 +1,7 @@
 import type {
   BaseColumn,
   Borough,
+  ColorBy,
   Company,
   DateRange,
   Dimension,
@@ -72,6 +73,21 @@ export interface QueryRepository {
   projection(query: ProjectionQuery): Promise<BucketRow[]>;
   breakdown(query: BreakdownQuery): Promise<KeyedRow[]>;
   projectionBreakdown(query: ProjectionBreakdownQuery): Promise<KeyedRow[]>;
+  /** Positioned trips of the sample (zones without geometry are excluded). */
+  samplePoints(query: SamplePointsQuery): Promise<SamplePoints>;
+}
+
+export interface SamplePointsQuery {
+  range: DateRange;
+  filters: TripFilters;
+  colorBy: ColorBy;
+}
+
+/** Columnar sample points; `category` holds the service or company of each point. */
+export interface SamplePoints {
+  lon: number[];
+  lat: number[];
+  category: string[];
 }
 
 /** Columns available in od_flow_monthly (route breakdowns). */
@@ -359,7 +375,61 @@ export const buildProjectionBreakdownSql = ({
   };
 };
 
+/** Filters shared by the sample queries (`s` = trip_sample, `z` = zones). */
+const sampleWhere = (p: Params, range: DateRange, filters: TripFilters) => {
+  const where = [
+    `s.pickup_at >= ${p.add(range.from, "timestamp")}`,
+    `s.pickup_at < ${p.add(range.to, "date")} + 1`,
+    `s.service = ANY(${p.add(filters.services, "text[]")})`,
+  ];
+  if (filters.companies.length > 0) {
+    where.push(`s.company = ANY(${p.add(filters.companies, "text[]")})`);
+  }
+  if (filters.boroughs.length > 0) {
+    where.push(`z.borough = ANY(${p.add(filters.boroughs, "text[]")})`);
+  }
+  if (filters.zones.length > 0)
+    where.push(`s.pu_zone_id = ANY(${p.add(filters.zones, "int[]")})`);
+  return {
+    where,
+    join:
+      filters.boroughs.length > 0 ? "JOIN zones z ON z.id = s.pu_zone_id" : "",
+  };
+};
+
+/**
+ * SQL of `samplePoints`: aggregates into three arrays in Postgres, so up to ~1M points come
+ * back as a single row instead of a million objects.
+ */
+export const buildSamplePointsSql = ({
+  range,
+  filters,
+  colorBy,
+}: SamplePointsQuery) => {
+  const p = new Params();
+  const { where, join } = sampleWhere(p, range, filters);
+  where.push("s.lon IS NOT NULL");
+  return {
+    sql: `SELECT coalesce(array_agg(s.lon ORDER BY s.sample_id), '{}') AS lon,
+                 coalesce(array_agg(s.lat ORDER BY s.sample_id), '{}') AS lat,
+                 coalesce(array_agg(s.${colorBy} ORDER BY s.sample_id), '{}') AS category
+          FROM trip_sample s ${join} WHERE ${where.join(" AND ")}`,
+    values: p.values,
+  };
+};
+
 export const createPrismaQueryRepository = (prisma: Db): QueryRepository => ({
+  async samplePoints(query) {
+    const { sql, values } = buildSamplePointsSql(query);
+    const [row] = await prisma.$queryRawUnsafe<
+      { lon: number[]; lat: number[]; category: string[] }[]
+    >(sql, ...values);
+    return {
+      lon: row?.lon ?? [],
+      lat: row?.lat ?? [],
+      category: row?.category ?? [],
+    };
+  },
   async breakdown(query) {
     const { sql, values } = buildBreakdownSql(query);
     return toKeyedRows(

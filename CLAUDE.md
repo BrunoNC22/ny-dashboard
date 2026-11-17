@@ -410,6 +410,11 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Top N + **"Outros"**, com a métrica recalculada a partir das somas das linhas cortadas.
   - Comparação linha a linha por chave, com período anterior, ano anterior ou intervalo custom. Contra a projeção, só com uma dimensão `service` ou `borough` e sem filtro de empresa ou zona.
   - Rótulos em pt-BR. Zonas e rotas usam os nomes da tabela `zones`, carregados uma vez, por exemplo "JFK Airport → Midtown Center".
+- **Mapa (#26, `POST /api/query/map`, pública):**
+  - `zones`: valor por zona de embarque, reaproveitando o breakdown por zona. Traz a variação % contra o período comparado; contra a projeção não há comparação, porque ela não existe por zona.
+  - `flows`: rotas principais, reaproveitando o breakdown por rota. Ficam de fora as rotas com as zonas 264/265, que não têm geometria. A resposta traz só os IDs das zonas: **o front pega os centróides do GeoJSON** (`properties.centroid`).
+  - `points`: corridas da amostra com posição, em formato colunar, com a categoria (serviço ou empresa) codificada como índice em `categories`. O SQL agrega tudo em `array_agg`, então ~1 milhão de pontos chegam numa única linha.
+  - Medido no local: 1 milhão de pontos = 20,8 MB de JSON em ~3 s (≈5,3 MB com o gzip do nginx); só os pontos do JFK = 435 KB em 0,09 s; zonas = 9 KB em 0,19 s.
 
 ## 14. Roteiro
 
