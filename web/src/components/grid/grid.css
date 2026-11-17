@@ -1,0 +1,49 @@
+/* react-grid-layout skin: glowing placeholder and a subtle corner resize handle. */
+
+.react-grid-item.react-grid-placeholder {
+  background: var(--nyd-accent-glow);
+  border: 1px dashed var(--nyd-accent);
+  border-radius: 1.25rem;
+  opacity: 1;
+  box-shadow: 0 0 24px -4px var(--nyd-accent-glow);
+}
+
+.react-grid-item.react-draggable-dragging {
+  z-index: 20;
+  cursor: grabbing;
+  filter: drop-shadow(0 16px 32px rgb(0 0 0 / 0.35));
+}
+
+.react-grid-item > .react-resizable-handle {
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+
+.react-grid-item:hover > .react-resizable-handle,
+.react-grid-item > .react-resizable-handle:focus-visible {
+  opacity: 1;
+}
+
+/* Replace the default triangle with an accent corner. */
+.react-grid-item > .react-resizable-handle::after {
+  right: 5px;
+  bottom: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--nyd-accent);
+  border-bottom: 2px solid var(--nyd-accent);
+  border-radius: 0 0 3px 0;
+}
+
+.react-grid-item > .react-resizable-handle {
+  background-image: none;
+}
+
+/* Touch: the header is the only drag area; keep it from scrolling the page while dragging. */
+.widget-drag-handle {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}

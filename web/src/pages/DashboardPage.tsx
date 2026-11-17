@@ -1,34 +1,35 @@
-import { DATA_COVERAGE } from "@ny-dashboard/shared";
-import { Link } from "react-router";
+import { GripVertical } from "lucide-react";
 
-/** Placeholder until the grid, widgets and shell arrive (#36–#49). */
+import { DashboardGrid } from "../components/grid/DashboardGrid";
+import { DRAG_HANDLE_CLASS } from "../components/grid/gridConfig";
+import { Card, Skeleton } from "../components/ui";
+import { useDashboardSync } from "../stores/useDashboardSync";
+
+/** The dashboard. Header/shell (#37) and real widgets (#40+) plug in here. */
 export function DashboardPage() {
+  const { ready } = useDashboardSync();
   return (
-    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col items-center justify-center gap-6 px-4 text-center">
-      <p className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs tracking-widest text-cyan-300 uppercase">
-        NYC TLC · {DATA_COVERAGE.period.from.slice(0, 7)} →{" "}
-        {DATA_COVERAGE.period.to.slice(0, 7)}
-      </p>
-      <h1 className="bg-gradient-to-r from-cyan-300 via-sky-400 to-fuchsia-400 bg-clip-text text-4xl font-semibold tracking-tight text-transparent sm:text-6xl">
-        NY Dashboard
-      </h1>
-      <p className="max-w-xl text-slate-400">
-        Dashboard personalizável com dados reais de táxis e apps de Nova York.
-      </p>
-      <nav className="flex gap-3">
-        <Link
-          to="/login"
-          className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm backdrop-blur transition hover:bg-white/10"
-        >
-          Entrar
-        </Link>
-        <Link
-          to="/cadastro"
-          className="rounded-xl bg-gradient-to-r from-cyan-500 to-fuchsia-500 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-fuchsia-500/20 transition hover:brightness-110"
-        >
-          Criar conta
-        </Link>
-      </nav>
+    <main className="mx-auto w-full max-w-[1600px] px-4 py-6">
+      {ready ? (
+        <DashboardGrid
+          renderWidget={(widget) => (
+            <Card
+              className="flex-1"
+              headerClassName={DRAG_HANDLE_CLASS}
+              title={widget.title}
+              icon={<GripVertical size={14} />}
+            >
+              <p className="text-xs text-muted">{widget.type}</p>
+            </Card>
+          )}
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-4">
+          {Array.from({ length: 8 }, (_, i) => (
+            <Skeleton key={i} className="h-40 rounded-card" />
+          ))}
+        </div>
+      )}
     </main>
   );
 }

@@ -33,6 +33,8 @@ export const useSaveStatus = create<SaveStatusStore>((set) => ({
 export function useDashboardSync(): { ready: boolean } {
   const me = useMe();
   const loggedIn = me.data !== null && me.data !== undefined;
+  // No session, or the API is unreachable: the dashboard still works locally.
+  const visitor = me.data === null || me.isError;
   const server = useDashboard({ enabled: loggedIn });
   const save = useSaveDashboard();
   const revision = useDashboardStore((s) => s.revision);
@@ -42,12 +44,12 @@ export function useDashboardSync(): { ready: boolean } {
 
   // Visitor: hydrate once from localStorage.
   useEffect(() => {
-    if (me.data !== null || visitorHydratedRef.current) return;
+    if (!visitor || visitorHydratedRef.current) return;
     visitorHydratedRef.current = true;
     const local = loadLocalDashboard();
     if (local) useDashboardStore.getState().hydrate(local);
     setStatus("local");
-  }, [me.data, setStatus]);
+  }, [visitor, setStatus]);
 
   // Logged in: hydrate from the server when it has something newer and we have no pending edits.
   useEffect(() => {
@@ -65,8 +67,7 @@ export function useDashboardSync(): { ready: boolean } {
   useEffect(() => {
     if (revision === 0) return;
     if (!loggedIn) {
-      if (me.data === null)
-        saveLocalDashboard(useDashboardStore.getState().state);
+      if (visitor) saveLocalDashboard(useDashboardStore.getState().state);
       return;
     }
     const timer = setTimeout(() => {
@@ -85,9 +86,11 @@ export function useDashboardSync(): { ready: boolean } {
     return () => {
       clearTimeout(timer);
     };
-  }, [revision, loggedIn, me.data, mutate, setStatus]);
+  }, [revision, loggedIn, visitor, mutate, setStatus]);
 
   return {
-    ready: me.isSuccess && (!loggedIn || server.isSuccess || server.isError),
+    ready:
+      (me.isSuccess || me.isError) &&
+      (!loggedIn || server.isSuccess || server.isError),
   };
 }

@@ -36,23 +36,23 @@ afterEach(() => {
 });
 
 describe("routes", () => {
-  it("renders the dashboard at /", () => {
+  it("renders the visitor dashboard at /", async () => {
     renderAt("/");
+    expect(await screen.findByText("Receita")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "NY Dashboard" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/2024-10 → 2026-09/)).toBeInTheDocument();
+      document.querySelector('[data-widget-id="map-zones"]'),
+    ).not.toBeNull();
   });
 
-  it("navigates to the login and sign-up pages", async () => {
-    const router = renderAt("/");
-    await userEvent.click(screen.getByRole("link", { name: "Entrar" }));
-    expect(router.state.location.pathname).toBe("/login");
+  it("navigates between the login and sign-up pages", async () => {
+    const router = renderAt("/login");
     expect(screen.getByRole("heading", { name: "Entrar" })).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole("link", { name: "NY Dashboard" }));
     await userEvent.click(screen.getByRole("link", { name: "Criar conta" }));
     expect(router.state.location.pathname).toBe("/cadastro");
+    await userEvent.click(screen.getByRole("link", { name: "Entrar" }));
+    expect(router.state.location.pathname).toBe("/login");
+    await userEvent.click(screen.getByRole("link", { name: "NY Dashboard" }));
+    expect(router.state.location.pathname).toBe("/");
   });
 
   it("shows a 404 page for unknown paths", () => {

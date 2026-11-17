@@ -295,6 +295,12 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - Depois de entrar ou criar conta, se o navegador tiver um dashboard de visitante customizado ou preferências locais, o modal **"Importar o dashboard deste navegador?"** oferece importar (PUT do dashboard + preferências) ou manter o da conta. **Nos dois casos a cópia local é descartada**, para a pergunta não se repetir.
   - `UserMenu`: visitante vê "Entrar" e "Criar conta"; logado vê avatar, nome e "Sair". Ao sair, o dashboard volta ao do visitante (local ou padrão).
   - Preferências locais: `nyd:preferences:v1`.
+- **Grid (#36, `web/src/components/grid`):**
+  - **react-grid-layout 2.3** (API v2: `Responsive` + `useContainerWidth`, `dragConfig`/`resizeConfig`).
+  - Breakpoints medidos **na largura do container do grid**: desktop > 767 px (12 colunas), mobile abaixo (2 colunas). Linhas de 40 px, margens de 16 px (desktop) e 12 px (mobile). Tamanho mínimo: 2×3 no desktop e 1×3 no mobile (o registro de widgets pode refinar por tipo).
+  - Arraste só pelo cabeçalho (classe `widget-drag-handle`, com `touch-action: none`); botões, links e campos dentro dele não iniciam arraste (`[data-no-drag]` também). Redimensionamento pelo canto inferior direito.
+  - **Só as ações do usuário (`onDragStop`/`onResizeStop`) chegam ao store**, para o grid sincronizar o layout ao montar ou trocar de breakpoint sem marcar o dashboard como editado. O `onLayoutChange` não é usado.
+  - Se a API estiver fora do ar, o app trata o usuário como visitante e o dashboard continua funcionando localmente.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
