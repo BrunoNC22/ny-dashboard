@@ -13,6 +13,7 @@ import pg from "pg";
 import { loadEnv } from "../config/env";
 import { SNAPSHOT_DIR, ZONES_DIR } from "../lib/paths";
 import { createPrisma } from "../lib/prisma";
+import { seedProjections } from "./projections";
 import { runSeed } from "./run";
 
 const { values } = parseArgs({
@@ -32,6 +33,7 @@ try {
     snapshotDir: SNAPSHOT_DIR,
     zonesDir: ZONES_DIR,
     force: values.force,
+    afterLoad: seedProjections,
   });
 } finally {
   await prisma.$disconnect();

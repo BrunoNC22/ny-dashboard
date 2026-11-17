@@ -26,7 +26,7 @@ export interface SeedOptions {
   afterLoad?: (
     client: PoolClient,
     log: (message: string) => void,
-  ) => Promise<void>;
+  ) => Promise<unknown>;
   log?: (message: string) => void;
 }
 

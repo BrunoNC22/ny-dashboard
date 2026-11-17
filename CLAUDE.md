@@ -171,6 +171,12 @@ As **métricas derivadas são calculadas a partir das somas** (por exemplo: tari
 - Granularidade: **diária, por serviço × distrito**, só para **métricas somáveis**. Médias e percentuais da projeção são derivados das somas projetadas.
 - **Backtest mensal:** para cada mês M, a projeção é feita **só com dados até o fim de M−1** → permite "esperado × real" em qualquer período. O primeiro mês com backtest é **nov/2024** (out/2024 é aquecimento).
 - **Projeção futura:** out/2026 → dez/2026 (feita com os dados até set/2026).
+- **Implementação (#19, `api/src/seed/projections.ts`):**
+  - Roda dentro da transação do seed, depois da carga.
+  - Monta séries diárias por serviço × distrito a partir de `trip_daily` ⨝ `zones`, com dias sem corridas valendo 0.
+  - Projeta **todas as colunas-base aplicáveis ao serviço** (as outras ficam NULL), então qualquer métrica derivada também tem projeção.
+  - Resultado: 16.611 linhas (21 séries; backtest de 699 dias + previsão de 92 dias).
+  - Qualidade do backtest de corridas por dia: MAPE de 8,2% (FHVHV), 11,7% (Green) e 13,1% (Yellow); viés no total entre −2,6% e +1%. Feriados não são modelados.
 
 ## 6. Funcionalidades do dashboard
 
@@ -354,7 +360,7 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Carrega `zones` (lookup + centróide) e as tabelas do snapshot via **`COPY ... FROM STDIN`** (`pg` + `pg-copy-streams`, lendo o gzip em stream), numa **única transação** que primeiro faz `TRUNCATE` nas tabelas de dados. Confere a contagem de linhas contra o manifest e roda `ANALYZE` no fim.
   - **Idempotência:** `seed_meta.snapshot_sha256` guarda o checksum do manifest carregado. Com `--if-empty` (padrão), a carga só é pulada se o banco já tiver **este mesmo snapshot**; um snapshot diferente (atualização mensal) é recarregado. `--force` sempre recarrega.
   - Usuários, preferências e dashboards nunca são apagados. O usuário `demo` só é criado se não existir, com preferências padrão e o dashboard padrão.
-  - Tempo: **~45 s** para carregar ~1,9 milhão de linhas no Postgres local.
+  - Tempo: **~80 s** no Postgres local, sendo ~35 s de COPY de ~1,9 milhão de linhas e ~44 s de projeções.
   - Senhas com **`bcryptjs`** (bcrypt em JS puro, custo 10), que evita build nativo no Docker e no CI.
   - `findApiRoot()` localiza a pasta `api/` tanto em `src/` (tsx) quanto em `dist/` (bundle de produção).
 
@@ -378,6 +384,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-11-17 | Snapshot (#12): 58,9 MB versionado no repo mesmo acima dos ~50 MB previstos (decisão do dono). Cache de parquets apagado ao fim da #12; `etl.duckdb` mantido localmente para atualizações mensais.                                                            |
+| 2026-11-17 | Projeções (#19): backtest mensal e previsão até dez/2026 para todas as colunas-base aplicáveis, por serviço × distrito.                                                                                                                                       |
 | 2026-11-17 | Seed (#18): COPY em transação, idempotente pelo checksum do snapshot; bcryptjs em vez de bcrypt nativo.                                                                                                                                                       |
 | 2026-11-17 | Banco (#14): Prisma 7 + adapter pg, Postgres 18, estado do dashboard em JSON, projeção em formato largo por serviço × distrito.                                                                                                                               |
 | 2026-11-17 | API (#13): Express 5 + pino; padrão de erros e de validação descritos na §13.                                                                                                                                                                                 |
