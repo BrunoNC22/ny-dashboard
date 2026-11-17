@@ -22,32 +22,32 @@ Fluxo esperado de quem clona o repo: `docker compose up` → abre o navegador �
 
 ## 2. Idioma e convenções
 
-| Item | Idioma |
-|---|---|
-| Interface (UI) | pt-BR (sem i18n) |
-| CLAUDE.md, README, issues | pt-BR |
-| Código (identificadores, comentários) | inglês |
-| Mensagens de commit | inglês |
+| Item                                  | Idioma           |
+| ------------------------------------- | ---------------- |
+| Interface (UI)                        | pt-BR (sem i18n) |
+| CLAUDE.md, README, issues             | pt-BR            |
+| Código (identificadores, comentários) | inglês           |
+| Mensagens de commit                   | inglês           |
 
 - Formatação de números: locale `pt-BR`. Valores monetários são em **dólar** (dados de NY) → `US$ 1.234,56`.
 - Datas exibidas como `dd/MM/yyyy`. **Fuso horário: `America/New_York`** (os timestamps da TLC são horário local de NY, sem fuso).
 
 ## 3. Stack
 
-| Camada | Tecnologia |
-|---|---|
-| Runtime | Node 24 LTS |
-| Gerenciador | pnpm 12 (workspaces; versão fixada em `packageManager` no `package.json` raiz). Os pacotes que podem rodar scripts de instalação ficam em `allowBuilds` no `pnpm-workspace.yaml` (aprovar com `pnpm approve-builds <pkg>`) |
-| Linguagem | TypeScript **6.0.x** (front, back e shared). **Não usar o TS 7**: o `typescript-eslint` só aceita versões abaixo da 6.1 |
-| Front | React 19, Vite, Tailwind CSS v4, React Router, Zustand (estado), TanStack Query (dados do servidor), zod, lucide-react (ícones), fonte Inter |
-| Gráficos | chart.js 4 + react-chartjs-2 + adapter de datas (date-fns) |
-| Grid | react-grid-layout (`Responsive`) |
-| Mapa | MapLibre GL (`react-map-gl/maplibre`) + **deck.gl** por cima; mapa de fundo **OpenFreeMap** (gratuito, sem chave) |
-| Back | Express 5, Prisma (última major estável), PostgreSQL, zod, bcrypt, JWT |
-| ETL | DuckDB via `@duckdb/node-api` (TypeScript) |
-| Testes | Vitest (unidade), Supertest + Postgres real (integração), Playwright (E2E) |
-| Lint/format | ESLint + Prettier |
-| Infra | Docker (um Dockerfile por app), docker-compose na raiz, GitHub Actions (CI) |
+| Camada      | Tecnologia                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime     | Node 24 LTS                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Gerenciador | pnpm 12 (workspaces; versão fixada em `packageManager` no `package.json` raiz). Os pacotes que podem rodar scripts de instalação ficam em `allowBuilds` no `pnpm-workspace.yaml` (aprovar com `pnpm approve-builds <pkg>`). O pnpm 12 também aplica `minimumReleaseAge` (rejeita versões publicadas há menos de cerca de 1 dia): **não adicione exceções em `minimumReleaseAgeExclude`**, prefira uma versão um pouco mais antiga |
+| Linguagem   | TypeScript **6.0.x** (front, back e shared). **Não usar o TS 7**: o `typescript-eslint` só aceita versões abaixo da 6.1                                                                                                                                                                                                                                                                                                           |
+| Front       | React 19, Vite, Tailwind CSS v4, React Router, Zustand (estado), TanStack Query (dados do servidor), zod, lucide-react (ícones), fonte Inter                                                                                                                                                                                                                                                                                      |
+| Gráficos    | chart.js 4 + react-chartjs-2 + adapter de datas (date-fns)                                                                                                                                                                                                                                                                                                                                                                        |
+| Grid        | react-grid-layout (`Responsive`)                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Mapa        | MapLibre GL (`react-map-gl/maplibre`) + **deck.gl** por cima; mapa de fundo **OpenFreeMap** (gratuito, sem chave)                                                                                                                                                                                                                                                                                                                 |
+| Back        | Express 5, Prisma (última major estável), PostgreSQL, zod, bcrypt, JWT                                                                                                                                                                                                                                                                                                                                                            |
+| ETL         | DuckDB via `@duckdb/node-api` (TypeScript)                                                                                                                                                                                                                                                                                                                                                                                        |
+| Testes      | Vitest (unidade), Supertest + Postgres real (integração), Playwright (E2E)                                                                                                                                                                                                                                                                                                                                                        |
+| Lint/format | ESLint 10 (flat config na raiz, `eslint.config.js`): `typescript-eslint` strict + stylistic **type-checked**, `@eslint-react` (o `eslint-plugin-react` clássico não suporta ESLint 10) + `react-hooks` + `react-refresh` no web, `simple-import-sort` para a ordem dos imports e `eslint-config-prettier`. Prettier com a configuração padrão (`.prettierrc.json` vazio)                                                          |
+| Infra       | Docker (um Dockerfile por app), docker-compose na raiz, GitHub Actions (CI)                                                                                                                                                                                                                                                                                                                                                       |
 
 ## 4. Estrutura do monorepo
 
@@ -120,21 +120,21 @@ Fluxo esperado de quem clona o repo: `docker compose up` → abre o navegador �
 
 ### 5.4 Normalização entre serviços
 
-| Métrica base (somável) | Yellow / Green | FHVHV |
-|---|---|---|
-| `trips` | contagem | contagem |
-| `passengers` | `passenger_count` | **não se aplica** |
-| `revenue` (**total pago pelo passageiro**) | `total_amount` | `base_passenger_fare + tolls + bcf + sales_tax + congestion_surcharge + airport_fee + tips + cbd_congestion_fee` |
-| `fare` | `fare_amount` | `base_passenger_fare` |
-| `tips` | `tip_amount` (obs.: só gorjeta em cartão é registrada) | `tips` |
-| `distance_mi` | `trip_distance` | `trip_miles` |
-| `duration_s` | dropoff − pickup | `trip_time` |
-| `airport_trips` | PU ou DO nas zonas 1 (EWR), 132 (JFK), 138 (LGA) | idem |
-| `card_trips` / `cash_trips` | `payment_type` 1 / 2 | **não se aplica** |
-| `cbd_fee` | `cbd_congestion_fee` (existe a partir de jan/2025) | idem |
-| `wait_s` | **não se aplica** | pickup − request |
-| `driver_pay` | **não se aplica** | `driver_pay` |
-| `shared_trips` | **não se aplica** | `shared_match_flag = 'Y'` |
+| Métrica base (somável)                     | Yellow / Green                                         | FHVHV                                                                                                            |
+| ------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `trips`                                    | contagem                                               | contagem                                                                                                         |
+| `passengers`                               | `passenger_count`                                      | **não se aplica**                                                                                                |
+| `revenue` (**total pago pelo passageiro**) | `total_amount`                                         | `base_passenger_fare + tolls + bcf + sales_tax + congestion_surcharge + airport_fee + tips + cbd_congestion_fee` |
+| `fare`                                     | `fare_amount`                                          | `base_passenger_fare`                                                                                            |
+| `tips`                                     | `tip_amount` (obs.: só gorjeta em cartão é registrada) | `tips`                                                                                                           |
+| `distance_mi`                              | `trip_distance`                                        | `trip_miles`                                                                                                     |
+| `duration_s`                               | dropoff − pickup                                       | `trip_time`                                                                                                      |
+| `airport_trips`                            | PU ou DO nas zonas 1 (EWR), 132 (JFK), 138 (LGA)       | idem                                                                                                             |
+| `card_trips` / `cash_trips`                | `payment_type` 1 / 2                                   | **não se aplica**                                                                                                |
+| `cbd_fee`                                  | `cbd_congestion_fee` (existe a partir de jan/2025)     | idem                                                                                                             |
+| `wait_s`                                   | **não se aplica**                                      | pickup − request                                                                                                 |
+| `driver_pay`                               | **não se aplica**                                      | `driver_pay`                                                                                                     |
+| `shared_trips`                             | **não se aplica**                                      | `shared_match_flag = 'Y'`                                                                                        |
 
 Métricas que não existem num serviço aparecem na UI como **"não se aplica"**.
 
@@ -175,6 +175,7 @@ As **métricas derivadas são calculadas a partir das somas** (por exemplo: tari
 ### 6.1 Widgets
 
 Tipos:
+
 - **Gráficos:** line, bar, área, barras empilhadas, doughnut/pie, radar, polar area, scatter, bubble.
 - **KPI:** card com ícone, valor, variação e status.
 - **Tabela:** por exemplo top zonas e top rotas.
@@ -193,6 +194,7 @@ Operações: **adicionar** (pela **galeria de modelos prontos**, que depois pode
 ### 6.3 KPIs
 
 Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
+
 - **comparação com o período anterior**, respeitando a direção da métrica (maior é melhor / menor é melhor), **e/ou**
 - **comparação com uma meta**, com faixas verde/amarelo/vermelho.
 
@@ -232,19 +234,19 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
 
 ## 9. API (visão geral)
 
-| Método | Rota | Descrição |
-|---|---|---|
-| POST | `/api/auth/register` · `/login` · `/logout` | autenticação |
-| GET | `/api/auth/me` | usuário atual |
-| GET/PUT | `/api/dashboard` | estado completo (widgets + layouts desktop/mobile) |
-| GET/PUT | `/api/preferences` | tema e paleta |
-| GET | `/api/meta` | período disponível, serviços, empresas, distritos, catálogo de métricas |
-| GET | `/api/zones` | GeoJSON das zonas (com cache/ETag) |
-| POST | `/api/query/timeseries` | série temporal (métrica, granularidade, intervalo, filtros, agrupamento, comparação, projeção) |
-| POST | `/api/query/kpi` | valor, valor comparado, variação, meta, status |
-| POST | `/api/query/breakdown` | agregação por dimensão (pizza, radar, barras, tabela) |
-| POST | `/api/query/map` | valores por zona (com variação), fluxos origem→destino, pontos da amostra |
-| POST | `/api/query/trips` | pontos da amostra de corridas para scatter/bubble |
+| Método  | Rota                                        | Descrição                                                                                      |
+| ------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| POST    | `/api/auth/register` · `/login` · `/logout` | autenticação                                                                                   |
+| GET     | `/api/auth/me`                              | usuário atual                                                                                  |
+| GET/PUT | `/api/dashboard`                            | estado completo (widgets + layouts desktop/mobile)                                             |
+| GET/PUT | `/api/preferences`                          | tema e paleta                                                                                  |
+| GET     | `/api/meta`                                 | período disponível, serviços, empresas, distritos, catálogo de métricas                        |
+| GET     | `/api/zones`                                | GeoJSON das zonas (com cache/ETag)                                                             |
+| POST    | `/api/query/timeseries`                     | série temporal (métrica, granularidade, intervalo, filtros, agrupamento, comparação, projeção) |
+| POST    | `/api/query/kpi`                            | valor, valor comparado, variação, meta, status                                                 |
+| POST    | `/api/query/breakdown`                      | agregação por dimensão (pizza, radar, barras, tabela)                                          |
+| POST    | `/api/query/map`                            | valores por zona (com variação), fluxos origem→destino, pontos da amostra                      |
+| POST    | `/api/query/trips`                          | pontos da amostra de corridas para scatter/bubble                                              |
 
 Todos os payloads são validados com schemas zod de `shared`. Fluxo MVC: `routes → controllers → services → models`, e a resposta passa por `views` (serializers).
 
@@ -289,20 +291,21 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
 
 O backlog completo está nas [issues do GitHub](https://github.com/BrunoNC22/ny-dashboard/issues), em 6 milestones. Cada issue lista as issues de que depende.
 
-| Milestone | Issues | Conteúdo |
-|---|---|---|
-| M0 — Fundação | #1–#5 | monorepo, lint, shared, vitest, CI básico |
-| M1 — Dados (ETL) | #6–#12 | zonas, ETL DuckDB, agregados, amostra, snapshot |
-| M2 — API | #13–#28 | Express MVC, Prisma, catálogo, dashboard padrão, Holt-Winters, seed, auth, endpoints, integração |
-| M3 — Web base | #29–#39 | bootstrap, design system, chartTheme, mapTheme, client, auth UI, store, grid, shell, filtros, preferências |
-| M4 — Widgets | #40–#49 | infra de widgets, galeria, editor, gráficos, KPI, tabela, mapa |
-| M5 — Entrega | #50–#55 | Dockerfiles, compose, E2E, CI completo, README |
+| Milestone        | Issues  | Conteúdo                                                                                                   |
+| ---------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| M0 — Fundação    | #1–#5   | monorepo, lint, shared, vitest, CI básico                                                                  |
+| M1 — Dados (ETL) | #6–#12  | zonas, ETL DuckDB, agregados, amostra, snapshot                                                            |
+| M2 — API         | #13–#28 | Express MVC, Prisma, catálogo, dashboard padrão, Holt-Winters, seed, auth, endpoints, integração           |
+| M3 — Web base    | #29–#39 | bootstrap, design system, chartTheme, mapTheme, client, auth UI, store, grid, shell, filtros, preferências |
+| M4 — Widgets     | #40–#49 | infra de widgets, galeria, editor, gráficos, KPI, tabela, mapa                                             |
+| M5 — Entrega     | #50–#55 | Dockerfiles, compose, E2E, CI completo, README                                                             |
 
 As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 ## 15. Histórico de decisões
 
-| Data | Decisão |
-|---|---|
-| 2026-11-16 | `shared` exporta o TS direto (sem build); a api usa tsx em dev e tsup em produção; TypeScript fixado em 6.0.x por compatibilidade com o typescript-eslint. |
+| Data       | Decisão                                                                                                                                                                                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | Lint: ESLint 10 + `@eslint-react` (em vez do `eslint-plugin-react`) e `simple-import-sort` (em vez do `import-x`). `typescript-eslint` fixado em 8.72.2 por causa do `minimumReleaseAge`.                                                                     |
+| 2026-11-16 | `shared` exporta o TS direto (sem build); a api usa tsx em dev e tsup em produção; TypeScript fixado em 6.0.x por compatibilidade com o typescript-eslint.                                                                                                    |
 | 2026-11-16 | Definição inicial completa (seções 1 a 12), feita com o dono do projeto antes de escrever qualquer código. Fonte de dados escolhida: NYC TLC (as alternativas avaliadas foram Olist, UCI Online Retail II, Contoso, BCB/Focus, ONS, OWID e dados sintéticos). |
