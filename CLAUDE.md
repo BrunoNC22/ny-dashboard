@@ -290,6 +290,11 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
     - **visitante:** o estado fica no `localStorage` (`nyd:dashboard:v1`, sempre com try/catch);
     - **logado:** carrega da API e **só aplica dados do servidor (inclusive o refetch no foco) se não houver edição local pendente**. Autosave 800 ms depois da última edição, e a última gravação vence.
   - O status ("salvando / salvo / erro / local") fica em `useSaveStatus`.
+- **UI de autenticação (#34, `web/src/components/auth`):**
+  - `/login` e `/cadastro`, com validação pelos schemas do `shared` (o cadastro tem confirmação de senha) e mensagens de erro da API em pt-BR.
+  - Depois de entrar ou criar conta, se o navegador tiver um dashboard de visitante customizado ou preferências locais, o modal **"Importar o dashboard deste navegador?"** oferece importar (PUT do dashboard + preferências) ou manter o da conta. **Nos dois casos a cópia local é descartada**, para a pergunta não se repetir.
+  - `UserMenu`: visitante vê "Entrar" e "Criar conta"; logado vê avatar, nome e "Sair". Ao sair, o dashboard volta ao do visitante (local ou padrão).
+  - Preferências locais: `nyd:preferences:v1`.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.

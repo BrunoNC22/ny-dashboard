@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createQueryClient } from "../api/queryClient";
 import { routes } from "../routes";
@@ -16,6 +16,24 @@ const renderAt = (path: string) => {
   );
   return router;
 };
+
+beforeEach(() => {
+  // visitor session for the pages that ask who is signed in
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({ error: { code: "UNAUTHORIZED", message: "x" } }),
+          { status: 401 },
+        ),
+      ),
+    ),
+  );
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("routes", () => {
   it("renders the dashboard at /", () => {
@@ -32,9 +50,7 @@ describe("routes", () => {
     expect(router.state.location.pathname).toBe("/login");
     expect(screen.getByRole("heading", { name: "Entrar" })).toBeInTheDocument();
 
-    await userEvent.click(
-      screen.getByRole("link", { name: "Voltar ao dashboard" }),
-    );
+    await userEvent.click(screen.getByRole("link", { name: "NY Dashboard" }));
     await userEvent.click(screen.getByRole("link", { name: "Criar conta" }));
     expect(router.state.location.pathname).toBe("/cadastro");
   });

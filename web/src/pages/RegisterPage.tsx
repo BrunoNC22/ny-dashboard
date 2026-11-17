@@ -1,13 +1,18 @@
-import { Link } from "react-router";
+import { AuthForm } from "../components/auth/AuthForm";
+import { ImportLocalModal } from "../components/auth/ImportLocalModal";
+import { useAuthFlow } from "../components/auth/useAuthFlow";
 
-/** Placeholder: the sign-up form arrives with the auth UI (#34). */
 export function RegisterPage() {
+  const { submit, pending, error, askImport, finish } = useAuthFlow("register");
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4">
-      <h1 className="text-2xl font-semibold">Criar conta</h1>
-      <Link to="/" className="text-sm text-cyan-300 hover:underline">
-        Voltar ao dashboard
-      </Link>
-    </main>
+    <>
+      <AuthForm
+        mode="register"
+        pending={pending}
+        error={error}
+        onSubmit={submit}
+      />
+      <ImportLocalModal open={askImport} onDone={finish} />
+    </>
   );
 }
