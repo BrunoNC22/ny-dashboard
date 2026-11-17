@@ -15,7 +15,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "tokens": "tsx scripts/generate-tokens.ts"
+    "tokens": "tsx scripts/generate-tokens.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@deck.gl/aggregation-layers": "9.4.1",
@@ -44,6 +45,7 @@
     "zustand": "5.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "@tailwindcss/vite": "4.3.5",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",

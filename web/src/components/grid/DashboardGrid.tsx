@@ -28,12 +28,21 @@ export interface DashboardGridProps {
  * Always editable: drag by the widget header, resize by the bottom-right corner. Only
  * user-initiated changes (drag/resize stop) reach the store, so mounting or switching
  * breakpoints never marks the dashboard as edited.
+ *
+ * RGL's `Responsive` fixes its breakpoint at mount and later derives layouts from that internal
+ * state. Mounting at the default 1280px on a phone and then receiving the server layouts mixed
+ * the desktop layout into the 2-column grid. So: measure before mounting, pass the breakpoint
+ * explicitly and remount on a breakpoint switch (fresh state from the current layouts).
  */
 export function DashboardGrid({
   renderWidget,
   width: fixedWidth,
 }: DashboardGridProps) {
-  const { width: measured, containerRef, mounted } = useContainerWidth();
+  const {
+    width: measured,
+    containerRef,
+    mounted,
+  } = useContainerWidth({ measureBeforeMount: true });
   const width = fixedWidth ?? measured;
   const state = useDashboardStore((s) => s.state);
   const updateLayout = useDashboardStore((s) => s.updateLayout);
@@ -48,6 +57,8 @@ export function DashboardGrid({
     <div ref={containerRef} className="w-full">
       {(mounted || fixedWidth !== undefined) && (
         <Responsive
+          key={breakpoint}
+          breakpoint={breakpoint}
           width={width}
           layouts={layouts}
           breakpoints={GRID_BREAKPOINTS}

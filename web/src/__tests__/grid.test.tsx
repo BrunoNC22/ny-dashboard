@@ -1,5 +1,5 @@
 import { createDefaultDashboard } from "@ny-dashboard/shared";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { DashboardGrid } from "../components/grid/DashboardGrid";
@@ -60,6 +60,35 @@ describe("DashboardGrid", () => {
       expect([...seen]).toEqual([expected]);
     },
   );
+
+  it("switching to the phone width uses the mobile layout after the desktop one changed", () => {
+    const { rerender, container } = render(
+      <DashboardGrid width={1280} renderWidget={(w) => w.title} />,
+    );
+    // server state arrives with a customized desktop layout
+    const state = createDefaultDashboard();
+    state.layouts.desktop = state.layouts.desktop.map((item) =>
+      item.i === "kpi-trips" ? { ...item, x: 2 } : item,
+    );
+    act(() => {
+      useDashboardStore.getState().hydrate(state);
+    });
+    rerender(<DashboardGrid width={390} renderWidget={(w) => w.title} />);
+
+    const left = (id: string) => {
+      const style =
+        container
+          .querySelector(`[data-widget-id="${id}"]`)
+          ?.getAttribute("style") ?? "";
+      return Number(/translate\((\d+(?:\.\d+)?)px/.exec(style)?.[1] ?? NaN);
+    };
+    // mobile layout: KPIs side by side in 2 columns, nothing beyond the phone width
+    expect(left("kpi-trips")).toBe(0);
+    expect(left("kpi-revenue")).toBeGreaterThan(0);
+    for (const widget of state.widgets) {
+      expect([widget.id, left(widget.id) < 390]).toEqual([widget.id, true]);
+    }
+  });
 
   it("mounting does not mark the dashboard as edited", () => {
     render(<DashboardGrid width={1280} renderWidget={(w) => w.title} />);
