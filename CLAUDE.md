@@ -621,6 +621,12 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - **Entrypoint** (`api/docker/entrypoint.sh`): `prisma migrate deploy` com até 30 tentativas a cada 2 s (é também a espera pelo banco) → `node dist/seed.js ${SEED_FLAGS:---if-empty}` → `exec node dist/server.js`.
   - Verificado contra um Postgres vazio: migration, seed completo em **~102 s**, login do demo e `healthy`. Ao reiniciar, o seed reconhece o snapshot e pula em 1 s.
   - Scripts: `build` (tsup), `start` e `db:seed:prod`.
+- **Imagem do web (#51, `web/Dockerfile` + `web/nginx.conf`):**
+  - **Build:** `pnpm fetch` → install só do web e do shared → `vite build`.
+  - **Runtime:** `nginxinc/nginx-unprivileged:1.28-alpine` (usuário `nginx`, porta **8080**), ~87 MB. O `nginx.conf` é um template: `API_UPSTREAM` (padrão `api:3000`) vem do ambiente.
+  - Rotas: `/api/` vai para a api (mesma origem; `proxy_read_timeout` de 120 s por causa das consultas de 1 milhão de pontos); `/assets/` com cache de 1 ano `immutable`; o resto cai no `index.html` (SPA) com `no-cache`, `nosniff` e `Referrer-Policy`. gzip para estáticos e respostas não comprimidas (a api já comprime o JSON).
+  - **`.mjs` como JavaScript:** o `mime.types` do nginx não conhece `.mjs`, e o worker do MapLibre era servido como `application/octet-stream`; o navegador recusava ("Worker failed to load") e os mapas quebravam. Uma `location` própria resolve.
+  - Verificado com api + web em containers: rotas da SPA, login e sessão por cookie, 1 milhão de pontos pelo proxy (5,2 MB com gzip em 3,7 s) e o dashboard padrão completo no navegador.
 - **Logs sem segredos (#50):** o `pino` oculta (`[redacted]`) `req.headers.cookie`, `req.headers.authorization` e `res.headers["set-cookie"]`. Antes, o log de requisições gravava o JWT da sessão. Um teste faz login e confere que o token não aparece no log.
 - **Web base (#29):**
   - Vite 8 + React 19 + Tailwind v4 (`@tailwindcss/vite`).
