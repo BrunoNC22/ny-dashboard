@@ -1,0 +1,1398 @@
+{
+  "formatVersion": 1,
+  "generatedAt": "2026-11-17T05:35:04.349Z",
+  "period": {
+    "from": "2024-10",
+    "to": "2026-09"
+  },
+  "sampleMonth": "2026-09",
+  "sources": [
+    {
+      "month": "2024-10",
+      "service": "fhvhv",
+      "read": 20028282,
+      "kept": 20022861,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 1797,
+        "fare_over_limit": 11,
+        "non_positive_distance": 2911,
+        "invalid_duration": 693,
+        "speed_over_limit": 9
+      }
+    },
+    {
+      "month": "2024-10",
+      "service": "green",
+      "read": 56147,
+      "kept": 52999,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 7,
+        "negative_fare": 147,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2546,
+        "invalid_duration": 268,
+        "speed_over_limit": 180
+      }
+    },
+    {
+      "month": "2024-10",
+      "service": "yellow",
+      "read": 3833771,
+      "kept": 3679493,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 40,
+        "negative_fare": 75377,
+        "fare_over_limit": 1,
+        "non_positive_distance": 75694,
+        "invalid_duration": 2085,
+        "speed_over_limit": 1081
+      }
+    },
+    {
+      "month": "2024-11",
+      "service": "fhvhv",
+      "read": 19987533,
+      "kept": 19981578,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 2257,
+        "fare_over_limit": 9,
+        "non_positive_distance": 2867,
+        "invalid_duration": 820,
+        "speed_over_limit": 2
+      }
+    },
+    {
+      "month": "2024-11",
+      "service": "green",
+      "read": 52222,
+      "kept": 48912,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 15,
+        "negative_fare": 144,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2693,
+        "invalid_duration": 298,
+        "speed_over_limit": 160
+      }
+    },
+    {
+      "month": "2024-11",
+      "service": "yellow",
+      "read": 3646369,
+      "kept": 3507589,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 50,
+        "negative_fare": 71470,
+        "fare_over_limit": 3,
+        "non_positive_distance": 63078,
+        "invalid_duration": 3182,
+        "speed_over_limit": 997
+      }
+    },
+    {
+      "month": "2024-12",
+      "service": "fhvhv",
+      "read": 21068851,
+      "kept": 21062707,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 2010,
+        "fare_over_limit": 30,
+        "non_positive_distance": 3217,
+        "invalid_duration": 879,
+        "speed_over_limit": 8
+      }
+    },
+    {
+      "month": "2024-12",
+      "service": "green",
+      "read": 53994,
+      "kept": 50435,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 18,
+        "negative_fare": 165,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2932,
+        "invalid_duration": 285,
+        "speed_over_limit": 159
+      }
+    },
+    {
+      "month": "2024-12",
+      "service": "yellow",
+      "read": 3668371,
+      "kept": 3516827,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 34,
+        "negative_fare": 78444,
+        "fare_over_limit": 6,
+        "non_positive_distance": 69528,
+        "invalid_duration": 2482,
+        "speed_over_limit": 1050
+      }
+    },
+    {
+      "month": "2025-01",
+      "service": "fhvhv",
+      "read": 20405666,
+      "kept": 20400193,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 2427,
+        "fare_over_limit": 10,
+        "non_positive_distance": 2606,
+        "invalid_duration": 425,
+        "speed_over_limit": 5
+      }
+    },
+    {
+      "month": "2025-01",
+      "service": "green",
+      "read": 48326,
+      "kept": 45127,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 43,
+        "negative_fare": 149,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2609,
+        "invalid_duration": 254,
+        "speed_over_limit": 144
+      }
+    },
+    {
+      "month": "2025-01",
+      "service": "yellow",
+      "read": 3475226,
+      "kept": 3251003,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 22,
+        "negative_fare": 144118,
+        "fare_over_limit": 3,
+        "non_positive_distance": 76442,
+        "invalid_duration": 2688,
+        "speed_over_limit": 950
+      }
+    },
+    {
+      "month": "2025-02",
+      "service": "fhvhv",
+      "read": 19339461,
+      "kept": 19336062,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 518,
+        "fare_over_limit": 12,
+        "non_positive_distance": 2467,
+        "invalid_duration": 395,
+        "speed_over_limit": 7
+      }
+    },
+    {
+      "month": "2025-02",
+      "service": "green",
+      "read": 46621,
+      "kept": 43334,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 19,
+        "negative_fare": 162,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2316,
+        "invalid_duration": 470,
+        "speed_over_limit": 320
+      }
+    },
+    {
+      "month": "2025-02",
+      "service": "yellow",
+      "read": 3577543,
+      "kept": 3305051,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 31,
+        "negative_fare": 182655,
+        "fare_over_limit": 6,
+        "non_positive_distance": 83239,
+        "invalid_duration": 5749,
+        "speed_over_limit": 812
+      }
+    },
+    {
+      "month": "2025-03",
+      "service": "fhvhv",
+      "read": 20536879,
+      "kept": 20533855,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 382,
+        "fare_over_limit": 16,
+        "non_positive_distance": 2184,
+        "invalid_duration": 426,
+        "speed_over_limit": 16
+      }
+    },
+    {
+      "month": "2025-03",
+      "service": "green",
+      "read": 51539,
+      "kept": 47628,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 11,
+        "negative_fare": 155,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2711,
+        "invalid_duration": 558,
+        "speed_over_limit": 476
+      }
+    },
+    {
+      "month": "2025-03",
+      "service": "yellow",
+      "read": 4145257,
+      "kept": 3825498,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 33,
+        "negative_fare": 208724,
+        "fare_over_limit": 5,
+        "non_positive_distance": 86956,
+        "invalid_duration": 23044,
+        "speed_over_limit": 997
+      }
+    },
+    {
+      "month": "2025-04",
+      "service": "fhvhv",
+      "read": 19753983,
+      "kept": 19750716,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 345,
+        "fare_over_limit": 8,
+        "non_positive_distance": 2325,
+        "invalid_duration": 580,
+        "speed_over_limit": 9
+      }
+    },
+    {
+      "month": "2025-04",
+      "service": "green",
+      "read": 52132,
+      "kept": 48084,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 12,
+        "negative_fare": 133,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2859,
+        "invalid_duration": 600,
+        "speed_over_limit": 444
+      }
+    },
+    {
+      "month": "2025-04",
+      "service": "yellow",
+      "read": 3970553,
+      "kept": 3670395,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 7,
+        "negative_fare": 186720,
+        "fare_over_limit": 3,
+        "non_positive_distance": 76896,
+        "invalid_duration": 35483,
+        "speed_over_limit": 1049
+      }
+    },
+    {
+      "month": "2025-05",
+      "service": "fhvhv",
+      "read": 21091193,
+      "kept": 21086562,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 327,
+        "fare_over_limit": 24,
+        "non_positive_distance": 2778,
+        "invalid_duration": 1490,
+        "speed_over_limit": 12
+      }
+    },
+    {
+      "month": "2025-05",
+      "service": "green",
+      "read": 55399,
+      "kept": 51528,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 10,
+        "negative_fare": 175,
+        "fare_over_limit": 1,
+        "non_positive_distance": 2721,
+        "invalid_duration": 540,
+        "speed_over_limit": 424
+      }
+    },
+    {
+      "month": "2025-05",
+      "service": "yellow",
+      "read": 4591845,
+      "kept": 4091169,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 24,
+        "negative_fare": 325266,
+        "fare_over_limit": 3,
+        "non_positive_distance": 109967,
+        "invalid_duration": 64221,
+        "speed_over_limit": 1195
+      }
+    },
+    {
+      "month": "2025-06",
+      "service": "fhvhv",
+      "read": 19868009,
+      "kept": 19863731,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 487,
+        "fare_over_limit": 17,
+        "non_positive_distance": 2488,
+        "invalid_duration": 1276,
+        "speed_over_limit": 10
+      }
+    },
+    {
+      "month": "2025-06",
+      "service": "green",
+      "read": 49390,
+      "kept": 46555,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 16,
+        "negative_fare": 156,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1752,
+        "invalid_duration": 443,
+        "speed_over_limit": 468
+      }
+    },
+    {
+      "month": "2025-06",
+      "service": "yellow",
+      "read": 4322960,
+      "kept": 3867992,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 20,
+        "negative_fare": 275564,
+        "fare_over_limit": 6,
+        "non_positive_distance": 110038,
+        "invalid_duration": 67888,
+        "speed_over_limit": 1452
+      }
+    },
+    {
+      "month": "2025-07",
+      "service": "fhvhv",
+      "read": 19653012,
+      "kept": 19648889,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 470,
+        "fare_over_limit": 34,
+        "non_positive_distance": 2136,
+        "invalid_duration": 1470,
+        "speed_over_limit": 13
+      }
+    },
+    {
+      "month": "2025-07",
+      "service": "green",
+      "read": 48205,
+      "kept": 46163,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 13,
+        "negative_fare": 130,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1452,
+        "invalid_duration": 215,
+        "speed_over_limit": 232
+      }
+    },
+    {
+      "month": "2025-07",
+      "service": "yellow",
+      "read": 3898963,
+      "kept": 3493620,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 7,
+        "negative_fare": 247088,
+        "fare_over_limit": 6,
+        "non_positive_distance": 101532,
+        "invalid_duration": 55712,
+        "speed_over_limit": 998
+      }
+    },
+    {
+      "month": "2025-08",
+      "service": "fhvhv",
+      "read": 19271461,
+      "kept": 19267196,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 772,
+        "fare_over_limit": 21,
+        "non_positive_distance": 2173,
+        "invalid_duration": 1286,
+        "speed_over_limit": 13
+      }
+    },
+    {
+      "month": "2025-08",
+      "service": "green",
+      "read": 46306,
+      "kept": 44280,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 23,
+        "negative_fare": 132,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1411,
+        "invalid_duration": 214,
+        "speed_over_limit": 246
+      }
+    },
+    {
+      "month": "2025-08",
+      "service": "yellow",
+      "read": 3574091,
+      "kept": 3179634,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 17,
+        "negative_fare": 261190,
+        "fare_over_limit": 6,
+        "non_positive_distance": 84844,
+        "invalid_duration": 47383,
+        "speed_over_limit": 1017
+      }
+    },
+    {
+      "month": "2025-09",
+      "service": "fhvhv",
+      "read": 19434641,
+      "kept": 19430359,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 1042,
+        "fare_over_limit": 30,
+        "non_positive_distance": 2141,
+        "invalid_duration": 1059,
+        "speed_over_limit": 10
+      }
+    },
+    {
+      "month": "2025-09",
+      "service": "green",
+      "read": 48893,
+      "kept": 47000,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 33,
+        "negative_fare": 114,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1394,
+        "invalid_duration": 150,
+        "speed_over_limit": 202
+      }
+    },
+    {
+      "month": "2025-09",
+      "service": "yellow",
+      "read": 4251015,
+      "kept": 3836919,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 7,
+        "negative_fare": 252718,
+        "fare_over_limit": 3,
+        "non_positive_distance": 102737,
+        "invalid_duration": 57472,
+        "speed_over_limit": 1159
+      }
+    },
+    {
+      "month": "2025-10",
+      "service": "fhvhv",
+      "read": 21308701,
+      "kept": 21303440,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 1765,
+        "fare_over_limit": 33,
+        "non_positive_distance": 2066,
+        "invalid_duration": 1387,
+        "speed_over_limit": 10
+      }
+    },
+    {
+      "month": "2025-10",
+      "service": "green",
+      "read": 49416,
+      "kept": 47326,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 21,
+        "negative_fare": 128,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1546,
+        "invalid_duration": 198,
+        "speed_over_limit": 197
+      }
+    },
+    {
+      "month": "2025-10",
+      "service": "yellow",
+      "read": 4428699,
+      "kept": 3942669,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 13,
+        "negative_fare": 321307,
+        "fare_over_limit": 2,
+        "non_positive_distance": 95310,
+        "invalid_duration": 68171,
+        "speed_over_limit": 1227
+      }
+    },
+    {
+      "month": "2025-11",
+      "service": "fhvhv",
+      "read": 20818240,
+      "kept": 20813275,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 1940,
+        "fare_over_limit": 41,
+        "non_positive_distance": 1953,
+        "invalid_duration": 1013,
+        "speed_over_limit": 18
+      }
+    },
+    {
+      "month": "2025-11",
+      "service": "green",
+      "read": 46912,
+      "kept": 44930,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 21,
+        "negative_fare": 142,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1438,
+        "invalid_duration": 190,
+        "speed_over_limit": 191
+      }
+    },
+    {
+      "month": "2025-11",
+      "service": "yellow",
+      "read": 4181444,
+      "kept": 3642887,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 24,
+        "negative_fare": 395093,
+        "fare_over_limit": 8,
+        "non_positive_distance": 80079,
+        "invalid_duration": 62245,
+        "speed_over_limit": 1108
+      }
+    },
+    {
+      "month": "2025-12",
+      "service": "fhvhv",
+      "read": 22108438,
+      "kept": 22102284,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 3020,
+        "fare_over_limit": 25,
+        "non_positive_distance": 2249,
+        "invalid_duration": 849,
+        "speed_over_limit": 11
+      }
+    },
+    {
+      "month": "2025-12",
+      "service": "green",
+      "read": 48236,
+      "kept": 46115,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 26,
+        "negative_fare": 158,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1504,
+        "invalid_duration": 246,
+        "speed_over_limit": 187
+      }
+    },
+    {
+      "month": "2025-12",
+      "service": "yellow",
+      "read": 4305006,
+      "kept": 4048586,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 9,
+        "negative_fare": 48175,
+        "fare_over_limit": 4,
+        "non_positive_distance": 149206,
+        "invalid_duration": 57900,
+        "speed_over_limit": 1126
+      }
+    },
+    {
+      "month": "2026-01",
+      "service": "fhvhv",
+      "read": 20940373,
+      "kept": 20907032,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 29965,
+        "fare_over_limit": 34,
+        "non_positive_distance": 2692,
+        "invalid_duration": 622,
+        "speed_over_limit": 28
+      }
+    },
+    {
+      "month": "2026-01",
+      "service": "green",
+      "read": 40272,
+      "kept": 38610,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 22,
+        "negative_fare": 119,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1237,
+        "invalid_duration": 140,
+        "speed_over_limit": 144
+      }
+    },
+    {
+      "month": "2026-01",
+      "service": "yellow",
+      "read": 3724889,
+      "kept": 3516107,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 7,
+        "negative_fare": 39462,
+        "fare_over_limit": 2,
+        "non_positive_distance": 122982,
+        "invalid_duration": 45469,
+        "speed_over_limit": 860
+      }
+    },
+    {
+      "month": "2026-02",
+      "service": "fhvhv",
+      "read": 19875686,
+      "kept": 19869014,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 4145,
+        "fare_over_limit": 34,
+        "non_positive_distance": 1908,
+        "invalid_duration": 575,
+        "speed_over_limit": 10
+      }
+    },
+    {
+      "month": "2026-02",
+      "service": "green",
+      "read": 37373,
+      "kept": 35631,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 11,
+        "negative_fare": 106,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1338,
+        "invalid_duration": 137,
+        "speed_over_limit": 150
+      }
+    },
+    {
+      "month": "2026-02",
+      "service": "yellow",
+      "read": 3399866,
+      "kept": 3210098,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 16,
+        "negative_fare": 26721,
+        "fare_over_limit": 5,
+        "non_positive_distance": 121180,
+        "invalid_duration": 41092,
+        "speed_over_limit": 754
+      }
+    },
+    {
+      "month": "2026-03",
+      "service": "fhvhv",
+      "read": 22058358,
+      "kept": 22049484,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 5669,
+        "fare_over_limit": 33,
+        "non_positive_distance": 2495,
+        "invalid_duration": 661,
+        "speed_over_limit": 16
+      }
+    },
+    {
+      "month": "2026-03",
+      "service": "green",
+      "read": 44208,
+      "kept": 42351,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 9,
+        "negative_fare": 110,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1394,
+        "invalid_duration": 200,
+        "speed_over_limit": 144
+      }
+    },
+    {
+      "month": "2026-03",
+      "service": "yellow",
+      "read": 3952451,
+      "kept": 3762520,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 19,
+        "negative_fare": 20724,
+        "fare_over_limit": 2,
+        "non_positive_distance": 119355,
+        "invalid_duration": 48707,
+        "speed_over_limit": 1124
+      }
+    },
+    {
+      "month": "2026-04",
+      "service": "fhvhv",
+      "read": 20995953,
+      "kept": 20988149,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 5436,
+        "fare_over_limit": 25,
+        "non_positive_distance": 1704,
+        "invalid_duration": 623,
+        "speed_over_limit": 16
+      }
+    },
+    {
+      "month": "2026-04",
+      "service": "green",
+      "read": 44238,
+      "kept": 42197,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 3,
+        "negative_fare": 153,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1530,
+        "invalid_duration": 200,
+        "speed_over_limit": 155
+      }
+    },
+    {
+      "month": "2026-04",
+      "service": "yellow",
+      "read": 3831240,
+      "kept": 3673852,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 12,
+        "negative_fare": 14328,
+        "fare_over_limit": 3,
+        "non_positive_distance": 92030,
+        "invalid_duration": 49876,
+        "speed_over_limit": 1139
+      }
+    },
+    {
+      "month": "2026-05",
+      "service": "fhvhv",
+      "read": 22125744,
+      "kept": 22114176,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 7728,
+        "fare_over_limit": 94,
+        "non_positive_distance": 2187,
+        "invalid_duration": 1542,
+        "speed_over_limit": 17
+      }
+    },
+    {
+      "month": "2026-05",
+      "service": "green",
+      "read": 44921,
+      "kept": 42935,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 10,
+        "negative_fare": 120,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1497,
+        "invalid_duration": 208,
+        "speed_over_limit": 151
+      }
+    },
+    {
+      "month": "2026-05",
+      "service": "yellow",
+      "read": 4090836,
+      "kept": 3911851,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 14,
+        "negative_fare": 14231,
+        "fare_over_limit": 7,
+        "non_positive_distance": 111424,
+        "invalid_duration": 52293,
+        "speed_over_limit": 1016
+      }
+    },
+    {
+      "month": "2026-06",
+      "service": "fhvhv",
+      "read": 20775868,
+      "kept": 20762656,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 6750,
+        "fare_over_limit": 88,
+        "non_positive_distance": 4732,
+        "invalid_duration": 1629,
+        "speed_over_limit": 13
+      }
+    },
+    {
+      "month": "2026-06",
+      "service": "green",
+      "read": 44163,
+      "kept": 42278,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 13,
+        "negative_fare": 108,
+        "fare_over_limit": 1,
+        "non_positive_distance": 1448,
+        "invalid_duration": 157,
+        "speed_over_limit": 158
+      }
+    },
+    {
+      "month": "2026-06",
+      "service": "yellow",
+      "read": 3837248,
+      "kept": 3646352,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 17,
+        "negative_fare": 13646,
+        "fare_over_limit": 6,
+        "non_positive_distance": 126526,
+        "invalid_duration": 49713,
+        "speed_over_limit": 988
+      }
+    },
+    {
+      "month": "2026-07",
+      "service": "fhvhv",
+      "read": 20921249,
+      "kept": 20913290,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 4326,
+        "fare_over_limit": 96,
+        "non_positive_distance": 1900,
+        "invalid_duration": 1623,
+        "speed_over_limit": 14
+      }
+    },
+    {
+      "month": "2026-07",
+      "service": "green",
+      "read": 41252,
+      "kept": 39266,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 16,
+        "negative_fare": 132,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1581,
+        "invalid_duration": 121,
+        "speed_over_limit": 136
+      }
+    },
+    {
+      "month": "2026-07",
+      "service": "yellow",
+      "read": 3530109,
+      "kept": 3345924,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 46,
+        "negative_fare": 14200,
+        "fare_over_limit": 8,
+        "non_positive_distance": 126768,
+        "invalid_duration": 42021,
+        "speed_over_limit": 1142
+      }
+    },
+    {
+      "month": "2026-08",
+      "service": "fhvhv",
+      "read": 20493480,
+      "kept": 20488846,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 1142,
+        "fare_over_limit": 62,
+        "non_positive_distance": 2185,
+        "invalid_duration": 1223,
+        "speed_over_limit": 22
+      }
+    },
+    {
+      "month": "2026-08",
+      "service": "green",
+      "read": 40687,
+      "kept": 38590,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 14,
+        "negative_fare": 150,
+        "fare_over_limit": 0,
+        "non_positive_distance": 1711,
+        "invalid_duration": 105,
+        "speed_over_limit": 117
+      }
+    },
+    {
+      "month": "2026-08",
+      "service": "yellow",
+      "read": 3336716,
+      "kept": 3163243,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 15,
+        "negative_fare": 14049,
+        "fare_over_limit": 9,
+        "non_positive_distance": 117553,
+        "invalid_duration": 40931,
+        "speed_over_limit": 916
+      }
+    },
+    {
+      "month": "2026-09",
+      "service": "fhvhv",
+      "read": 20987681,
+      "kept": 20981078,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 0,
+        "negative_fare": 2561,
+        "fare_over_limit": 56,
+        "non_positive_distance": 2702,
+        "invalid_duration": 1263,
+        "speed_over_limit": 21
+      }
+    },
+    {
+      "month": "2026-09",
+      "service": "green",
+      "read": 46676,
+      "kept": 44152,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 26,
+        "negative_fare": 143,
+        "fare_over_limit": 0,
+        "non_positive_distance": 2125,
+        "invalid_duration": 107,
+        "speed_over_limit": 123
+      }
+    },
+    {
+      "month": "2026-09",
+      "service": "yellow",
+      "read": 3876044,
+      "kept": 3666941,
+      "discarded": {
+        "invalid_pickup_zone": 0,
+        "outside_month": 22,
+        "negative_fare": 14190,
+        "fare_over_limit": 4,
+        "non_positive_distance": 145646,
+        "invalid_duration": 48081,
+        "speed_over_limit": 1160
+      }
+    }
+  ],
+  "tables": {
+    "agg_daily_zone": {
+      "rows": 626634,
+      "columns": [
+        {
+          "name": "date",
+          "type": "DATE"
+        },
+        {
+          "name": "service",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "company",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "pu_zone_id",
+          "type": "SMALLINT"
+        },
+        {
+          "name": "trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "passengers",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "passenger_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "revenue",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "fare",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "tips",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "distance_mi",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "duration_s",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "airport_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "card_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "cash_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "cbd_fee",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "wait_s",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "wait_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "driver_pay",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "shared_trips",
+          "type": "BIGINT"
+        }
+      ],
+      "files": [
+        {
+          "file": "agg_daily_zone.000.csv.gz",
+          "rows": 626634,
+          "bytes": 21464619,
+          "sha256": "42c4a7a80bedc51bf3753b2d0f1e0e67a8fe8b7bd16942ff39b99e280575e0dd"
+        }
+      ]
+    },
+    "agg_hourly": {
+      "rows": 70027,
+      "columns": [
+        {
+          "name": "hour",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "service",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "company",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "passengers",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "passenger_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "revenue",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "fare",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "tips",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "distance_mi",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "duration_s",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "airport_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "card_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "cash_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "cbd_fee",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "wait_s",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "wait_trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "driver_pay",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "shared_trips",
+          "type": "BIGINT"
+        }
+      ],
+      "files": [
+        {
+          "file": "agg_hourly.000.csv.gz",
+          "rows": 70027,
+          "bytes": 3007936,
+          "sha256": "fb1e16e43a3bbeafcf4d59845c7af9c89ce3d5aa94cc114298b48995b911ed03"
+        }
+      ]
+    },
+    "agg_od_monthly": {
+      "rows": 230805,
+      "columns": [
+        {
+          "name": "month",
+          "type": "DATE"
+        },
+        {
+          "name": "service",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "company",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "pu_borough",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "pu_zone_id",
+          "type": "SMALLINT"
+        },
+        {
+          "name": "do_zone_id",
+          "type": "SMALLINT"
+        },
+        {
+          "name": "trips",
+          "type": "BIGINT"
+        },
+        {
+          "name": "revenue",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "distance_mi",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "duration_s",
+          "type": "DOUBLE"
+        }
+      ],
+      "files": [
+        {
+          "file": "agg_od_monthly.000.csv.gz",
+          "rows": 230805,
+          "bytes": 3839474,
+          "sha256": "a890acffb9d3426e0dda3606e07fc272604a0ea08f024598c7c36e83e5f84917"
+        }
+      ]
+    },
+    "trip_sample": {
+      "rows": 1000000,
+      "columns": [
+        {
+          "name": "sample_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "service",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "company",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "pickup_at",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "pu_zone_id",
+          "type": "SMALLINT"
+        },
+        {
+          "name": "do_zone_id",
+          "type": "SMALLINT"
+        },
+        {
+          "name": "distance_mi",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "duration_s",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "fare",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "tips",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "revenue",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "wait_s",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "lon",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "lat",
+          "type": "DOUBLE"
+        }
+      ],
+      "files": [
+        {
+          "file": "trip_sample.000.csv.gz",
+          "rows": 1000000,
+          "bytes": 30543161,
+          "sha256": "c0153e4a030dadb8cbee10d41518e9ecd965f85b83294ab493963a8008881222"
+        }
+      ]
+    }
+  },
+  "totalBytes": 58855190
+}

@@ -117,6 +117,7 @@ Fluxo esperado de quem clona o repo: `docker compose up` → abre o navegador �
    Os agregados se acumulam em `api/etl/.cache/etl.duckdb` (fora do git). Cada etapa substitui as linhas do mês × serviço que processa, então reexecutar é idempotente.
 2. O resultado é um **snapshot agregado versionado no repo**, em `api/data/snapshot/` (CSV gzip, em chunks de **≤ 45 MB** cada, por causa do limite de 100 MB por arquivo do GitHub), com um `manifest.json` contendo o período, contagens de linhas, checksums e a data de geração.
 3. O **seed** carrega o snapshot no Postgres (via `COPY`, por desempenho). O seed funciona **offline**, sem baixar nada.
+   **Snapshot atual (gerado em 17/11/2026, out/2024 → set/2026): 58,9 MB.** Em detalhe: `agg_daily_zone` 626.634 linhas (21,5 MB), `agg_hourly` 70.027 (3,0 MB), `agg_od_monthly` 230.805 (3,8 MB) e `trip_sample` 1.000.000 (30,5 MB). Passou um pouco dos ~50 MB previstos na decisão 47A, mas o dono do projeto decidiu **versionar assim mesmo**: o seed fica offline e cada arquivo tem menos de 45 MB. Cada atualização mensal acrescenta ~59 MB ao histórico. Parquet com zstd daria 46,6 MB, mas o seed precisaria de um leitor de Parquet. A execução completa do ETL (24 meses × 3 serviços, ~14 GB) leva ~16 min, e a exportação ~16 s.
 4. **Atualização mensal: manual.** Rodar `pnpm etl` e commitar o snapshot novo. (Sem GitHub Action agendado.)
 
 ### 5.4 Normalização entre serviços
@@ -343,6 +344,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | Snapshot (#12): 58,9 MB versionado no repo mesmo acima dos ~50 MB previstos (decisão do dono). Cache de parquets apagado ao fim da #12; `etl.duckdb` mantido localmente para atualizações mensais.                                                            |
 | 2026-11-17 | Banco (#14): Prisma 7 + adapter pg, Postgres 18, estado do dashboard em JSON, projeção em formato largo por serviço × distrito.                                                                                                                               |
 | 2026-11-17 | API (#13): Express 5 + pino; padrão de erros e de validação descritos na §13.                                                                                                                                                                                 |
 | 2026-11-17 | ETL (#8): agregados acumulados em `etl.duckdb`. Durante as #8 a #12, os parquets dos 24 meses (~14 GB) ficam em cache (`--keep-cache`) para reprocessar sem baixar de novo. **O cache deve ser apagado ao fim da #12.**                                       |
