@@ -4,9 +4,9 @@ import type { Logger } from "pino";
 import { pinoHttp } from "pino-http";
 
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
-import { apiRouter } from "./routes";
+import { type ApiDependencies, createApiRouter } from "./routes";
 
-export interface AppDependencies {
+export interface AppDependencies extends ApiDependencies {
   logger: Logger;
 }
 
@@ -14,7 +14,7 @@ export interface AppDependencies {
  * Builds the Express app (MVC: routes → controllers → services → models; views serialize).
  * Exported separately from the server so tests can use it with supertest.
  */
-export const createApp = ({ logger }: AppDependencies): Express => {
+export const createApp = ({ logger, ...deps }: AppDependencies): Express => {
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", 1); // behind nginx in production
@@ -28,7 +28,7 @@ export const createApp = ({ logger }: AppDependencies): Express => {
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
 
-  app.use("/api", apiRouter);
+  app.use("/api", createApiRouter(deps));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

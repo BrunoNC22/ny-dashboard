@@ -2,10 +2,9 @@ import { apiErrorSchema } from "@ny-dashboard/shared";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 
-import { createApp } from "../app";
-import { silentLogger } from "./helpers";
+import { createTestApp } from "./helpers";
 
-const app = createApp({ logger: silentLogger });
+const { app } = createTestApp();
 
 describe("app", () => {
   it("GET /api/health returns ok", async () => {

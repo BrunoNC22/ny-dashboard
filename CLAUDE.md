@@ -363,6 +363,13 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Tempo: **~80 s** no Postgres local, sendo ~35 s de COPY de ~1,9 milhão de linhas e ~44 s de projeções.
   - Senhas com **`bcryptjs`** (bcrypt em JS puro, custo 10), que evita build nativo no Docker e no CI.
   - `findApiRoot()` localiza a pasta `api/` tanto em `src/` (tsx) quanto em `dist/` (bundle de produção).
+- **Autenticação (#20):**
+  - JWT HS256 com **`jose`**, em cookie `nyd_session` (`HttpOnly`, `SameSite=Lax`, `Path=/`). `Secure` depende de `COOKIE_SECURE` (padrão `false`, porque a demo roda em `http://localhost`).
+  - `JWT_SECRET` precisa ter ≥ 16 caracteres, e o valor do `.env.example` é recusado em produção. `JWT_EXPIRES_IN` vale 7 dias por padrão.
+  - O login responde 401 `INVALID_CREDENTIALS` sem revelar se o usuário existe: quando ele não existe, compara mesmo assim com um hash fictício, para o tempo de resposta ser parecido.
+  - Usuário repetido → 409 `CONFLICT`.
+  - O cadastro cria o usuário com as preferências padrão e o dashboard padrão.
+  - **Injeção de dependências:** os services dependem de interfaces de repositório (`UserRepository` etc.). `server.ts` liga a implementação Prisma, e os testes de unidade usam a implementação em memória de `__tests__/helpers.ts` (`createTestApp`).
 
 ## 14. Roteiro
 
