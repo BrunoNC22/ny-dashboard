@@ -12,4 +12,16 @@ export default defineConfig({
     proxy: { "/api": { target: API_TARGET, changeOrigin: false } },
   },
   preview: { port: 4173 },
+  // Pre-bundle the map stack up front: react-map-gl imports maplibre dynamically, and a
+  // re-optimization mid-load invalidates the already loaded chunks.
+  optimizeDeps: {
+    include: [
+      "maplibre-gl",
+      "react-map-gl/maplibre",
+      "@deck.gl/core",
+      "@deck.gl/layers",
+      "@deck.gl/aggregation-layers",
+      "@deck.gl/mapbox",
+    ],
+  },
 });

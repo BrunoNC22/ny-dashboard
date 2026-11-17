@@ -265,6 +265,18 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
     - `stackedBarStyle` (2 px de espaço entre segmentos), `seriesColor` (ordem fixa; acima do 8º slot vira "Outros");
     - `pointStyle` (forma por categoria), `timeScale` (formatos pt-BR) e `largeDataOptions` (acima de 1.000 pontos: sem animação, `parsing: false` e decimação LTTB).
   - `useChartTheme()` acompanha `<html data-theme data-palette>` (via `useThemeAttributes`, com MutationObserver) e reaplica os defaults. A `/_ds` tem uma seção que mostra todos os estilos.
+- **Estilo do mapa (#32, `web/src/map/mapTheme.ts`):**
+  - Mapa de fundo OpenFreeMap: `dark` no tema escuro e `positron` no claro.
+  - `tuneBasemapStyle` recolore o estilo: fundo derivado da página, água tingida pela cor de destaque da paleta, rótulos em `muted`.
+  - **Escala sequencial em quantis** (7 classes; as corridas por zona são muito concentradas). No escuro, a escala se inverte para valores baixos sumirem no fundo.
+  - Escala divergente vermelho ↔ verde **por melhora** (`divergingColor`, que considera a direção da métrica), com legenda "piora / melhora".
+  - Cores por categoria seguem a paleta; os arcos usam o gradiente de destaque. Atribuição OSM/OpenFreeMap/NYC TLC.
+  - `useMapTheme` busca o estilo uma vez por tema e o reajusta à paleta.
+  - `BaseMap` (MapLibre + controles) cai num fundo liso se o mapa de fundo estiver fora do ar.
+  - `DeckOverlay` usa o deck.gl **não intercalado** (canvas próprio). No modo intercalado, a remontagem do StrictMode gera "WebGL context already attached".
+  - Detalhes do MapLibre 6 + Vite:
+    - o worker é apontado com `setWorkerUrl` + `import ...maplibre-gl-worker.mjs?url` (no build ele vira um asset próprio);
+    - a stack do mapa fica em `optimizeDeps.include`, para o Vite não refazer o pré-bundle no meio do carregamento.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
@@ -497,6 +509,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 | 2026-11-17 | Projeções (#19): backtest mensal e previsão até dez/2026 para todas as colunas-base aplicáveis, por serviço × distrito.                                                                                                                                       |
 | 2026-11-17 | Seed (#18): COPY em transação, idempotente pelo checksum do snapshot; bcryptjs em vez de bcrypt nativo.                                                                                                                                                       |
 | 2026-11-17 | Banco (#14): Prisma 7 + adapter pg, Postgres 18, estado do dashboard em JSON, projeção em formato largo por serviço × distrito.                                                                                                                               |
+| 2026-11-17 | Mapa (#32): OpenFreeMap reajustado aos tokens; escala sequencial em quantis; deck.gl não intercalado; maplibre-gl fixado em 6.18.0 (a 6.19.0 era do mesmo dia).                                                                                               |
 | 2026-11-17 | Design system (#30): as paletas são ordens validadas das 8 matizes documentadas; tokens em TS geram o CSS; lucide-react fixado em 1.73.0 (a 1.74.0 tinha 1 h).                                                                                                |
 | 2026-11-17 | API (#13): Express 5 + pino; padrão de erros e de validação descritos na §13.                                                                                                                                                                                 |
 | 2026-11-17 | ETL (#8): agregados acumulados em `etl.duckdb`. Durante as #8 a #12, os parquets dos 24 meses (~14 GB) ficam em cache (`--keep-cache`) para reprocessar sem baixar de novo. **O cache deve ser apagado ao fim da #12.**                                       |

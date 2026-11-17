@@ -18,6 +18,7 @@ import {
   toast,
   Tooltip,
 } from "../components/ui";
+import { MapDemo } from "../map/MapDemo";
 import { PALETTE_ORDERS, SEQUENTIAL, STATUS } from "../styles/tokens";
 
 const PALETTE_LABELS: Record<Palette, string> = {
@@ -248,6 +249,7 @@ export function DesignSystemPage() {
       </section>
 
       <ChartsDemo />
+      <MapDemo />
 
       <Modal
         open={modal}

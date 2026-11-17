@@ -11,6 +11,7 @@ vi.mock("react-chartjs-2", () => ({
   Radar: () => null,
   Scatter: () => null,
 }));
+vi.mock("../map/MapDemo", () => ({ MapDemo: () => null }));
 
 import {
   Badge,
