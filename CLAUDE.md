@@ -277,6 +277,11 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - Detalhes do MapLibre 6 + Vite:
     - o worker é apontado com `setWorkerUrl` + `import ...maplibre-gl-worker.mjs?url` (no build ele vira um asset próprio);
     - a stack do mapa fica em `optimizeDeps.include`, para o Vite não refazer o pré-bundle no meio do carregamento.
+- **Cliente da API (#33, `web/src/api`):**
+  - `apiFetch` envia e recebe JSON com o cookie da mesma origem. Erros viram `ApiRequestError(status, code)`, e falha de rede vira `NETWORK_ERROR`.
+  - As respostas pequenas são validadas com os schemas do `shared`; `map` e `trips` não (até 1 milhão de pontos).
+  - Hooks: `useMe` (devolve `null` para visitante), `useLogin`/`useRegister`/`useLogout`, `useDashboard`/`useSaveDashboard`, `usePreferences`/`useSavePreferences` (refetch no foco), `useMeta`/`useZones` (`staleTime` infinito) e `useTimeseries`/`useKpi`/`useBreakdown`/`useMapQuery`/`useTrips` (mantêm o resultado anterior enquanto os filtros mudam).
+  - As chaves de query ficam em `queryKeys`.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
