@@ -269,7 +269,7 @@ Todos os payloads são validados com schemas zod de `shared`. Fluxo MVC: `routes
 - `docker-compose.yml` na raiz sobe **db** (Postgres, com healthcheck e volume), **api** e **web**.
 - **api:** imagem multi-stage. O entrypoint roda `prisma migrate deploy`, depois o **seed com `--if-empty`** (só popula se o banco estiver vazio, idempotente) e por fim sobe o servidor.
 - **web:** build estático servido por **nginx**, que repassa `/api` para a api e faz o fallback de SPA.
-- **Desenvolvimento local:** `docker compose up db` + `pnpm dev` (api e web com hot reload, fora do Docker).
+- **Desenvolvimento local:** `docker compose up -d db` + `pnpm --filter @ny-dashboard/api db:migrate` + `pnpm dev` (api e web com hot reload, fora do Docker). Passo a passo no README.
 
 ## 12. Fluxo de trabalho
 
@@ -313,6 +313,16 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - `app.ts` monta o app sem escutar porta (os testes usam supertest); `server.ts` sobe o servidor.
   - Fora de produção, o `.env` da raiz é carregado com `process.loadEnvFile`.
 - **jsdom fixado em 29.1.1:** o 30.x e o 31.x exigem Node ≥ 24.15, e a máquina de desenvolvimento usa 24.14.1. Quando atualizar o Node local, dá para subir o jsdom.
+- **Banco (#14):**
+  - **Prisma 7**, com o gerador `prisma-client` (saída em `api/src/generated/prisma`, ignorada pelo git e gerada no `postinstall`) e o driver adapter `@prisma/adapter-pg`.
+  - A URL do banco vem do `prisma.config.ts`, que carrega o `.env` da raiz fora de produção.
+  - **Postgres 18** (`postgres:18-alpine`). O volume fica montado em `/var/lib/postgresql`, que é o caminho novo a partir da versão 18.
+  - IDs de usuário e dashboard: UUID v7.
+  - `Dashboard.state` é um **JSON** com o `DashboardState` inteiro.
+  - `theme`/`palette` são strings, validadas pelo zod na API (sem enum no banco).
+  - As tabelas de dados espelham o snapshot (`trip_daily`, `trip_hourly`, `od_flow_monthly`, `trip_sample`, `zones`).
+  - `projection` usa formato **largo**: uma linha por dia × serviço × distrito, com as mesmas colunas de métricas somáveis. A projeção **não separa por empresa**.
+  - Scripts: `db:migrate`, `db:deploy`, `db:generate` e `db:studio`.
 
 ## 14. Roteiro
 
@@ -333,6 +343,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | Banco (#14): Prisma 7 + adapter pg, Postgres 18, estado do dashboard em JSON, projeção em formato largo por serviço × distrito.                                                                                                                               |
 | 2026-11-17 | API (#13): Express 5 + pino; padrão de erros e de validação descritos na §13.                                                                                                                                                                                 |
 | 2026-11-17 | ETL (#8): agregados acumulados em `etl.duckdb`. Durante as #8 a #12, os parquets dos 24 meses (~14 GB) ficam em cache (`--keep-cache`) para reprocessar sem baixar de novo. **O cache deve ser apagado ao fim da #12.**                                       |
 | 2026-11-17 | ETL (#7): download sequencial com retry e remoção depois do processamento (sem leitura remota); novas regras de limpeza (tarifa > US$ 1.000, velocidade > 80 mph); % cartão = cartão ÷ (cartão + dinheiro).                                                   |

@@ -3,6 +3,8 @@ packages:
   - web
   - shared
 allowBuilds:
+  "@prisma/engines": true
   better-sqlite3: false
   esbuild: true
   msgpackr-extract: false
+  prisma: true

@@ -1,0 +1,201 @@
+// Database schema (CLAUDE.md §5.6, §6). Data tables mirror the snapshot in api/data/snapshot
+// and are filled by the seed; app tables hold users, preferences and dashboards.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Application ────────────────────────────────────────────────────────────────
+
+model User {
+  id           String       @id @default(uuid(7)) @db.Uuid
+  /// 3–32 chars [a-z0-9._-], lowercase (shared `usernameSchema`).
+  username     String       @unique @db.VarChar(32)
+  passwordHash String       @map("password_hash")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  preferences  Preferences?
+  dashboard    Dashboard?
+
+  @@map("users")
+}
+
+model Preferences {
+  userId    String   @id @map("user_id") @db.Uuid
+  /// "light" | "dark" (validated by the shared `preferencesSchema`).
+  theme     String   @db.VarChar(16)
+  /// Palette id, e.g. "aurora".
+  palette   String   @db.VarChar(32)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("preferences")
+}
+
+/// One dashboard per user. `state` is the shared `DashboardState` (widgets + desktop/mobile
+/// layouts + global filters), saved as a whole; last write wins (CLAUDE.md §6.5).
+model Dashboard {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  state     Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("dashboards")
+}
+
+// ── Trip data (filled by the seed) ────────────────────────────────────────────
+
+/// TLC taxi zones (lookup + inner point of the polygon).
+model Zone {
+  id          Int    @id @db.SmallInt
+  name        String
+  /// Shared borough id, e.g. "staten_island".
+  borough     String @db.VarChar(16)
+  serviceZone String @map("service_zone") @db.VarChar(16)
+  /// Null for 264/265 (no geometry).
+  centroidLon Float? @map("centroid_lon")
+  centroidLat Float? @map("centroid_lat")
+
+  @@index([borough])
+  @@map("zones")
+}
+
+/// Daily (New York date) × pickup zone × service × company. Sums and denominators only;
+/// columns that do not apply to a service are NULL (see api/etl/README.md).
+model TripDaily {
+  date           DateTime @db.Date
+  service        String   @db.VarChar(8)
+  company        String   @db.VarChar(8)
+  puZoneId       Int      @map("pu_zone_id") @db.SmallInt
+  trips          Int
+  passengers     Int?
+  passengerTrips Int?     @map("passenger_trips")
+  revenue        Float
+  fare           Float
+  tips           Float
+  distanceMi     Float    @map("distance_mi")
+  durationS      BigInt   @map("duration_s")
+  airportTrips   Int      @map("airport_trips")
+  cardTrips      Int?     @map("card_trips")
+  cashTrips      Int?     @map("cash_trips")
+  cbdFee         Float    @map("cbd_fee")
+  waitS          BigInt?  @map("wait_s")
+  waitTrips      Int?     @map("wait_trips")
+  driverPay      Float?   @map("driver_pay")
+  sharedTrips    Int?     @map("shared_trips")
+
+  @@id([date, service, company, puZoneId])
+  @@index([puZoneId, date])
+  @@map("trip_daily")
+}
+
+/// Hour (New York wall clock) × service × company, same metric columns as TripDaily.
+model TripHourly {
+  hour           DateTime @db.Timestamp(0)
+  service        String   @db.VarChar(8)
+  company        String   @db.VarChar(8)
+  trips          Int
+  passengers     Int?
+  passengerTrips Int?     @map("passenger_trips")
+  revenue        Float
+  fare           Float
+  tips           Float
+  distanceMi     Float    @map("distance_mi")
+  durationS      BigInt   @map("duration_s")
+  airportTrips   Int      @map("airport_trips")
+  cardTrips      Int?     @map("card_trips")
+  cashTrips      Int?     @map("cash_trips")
+  cbdFee         Float    @map("cbd_fee")
+  waitS          BigInt?  @map("wait_s")
+  waitTrips      Int?     @map("wait_trips")
+  driverPay      Float?   @map("driver_pay")
+  sharedTrips    Int?     @map("shared_trips")
+
+  @@id([hour, service, company])
+  @@map("trip_hourly")
+}
+
+/// Top origin → destination routes per month × service × company × pickup borough.
+model OdFlowMonthly {
+  /// First day of the month.
+  month      DateTime @db.Date
+  service    String   @db.VarChar(8)
+  company    String   @db.VarChar(8)
+  puBorough  String   @map("pu_borough") @db.VarChar(16)
+  puZoneId   Int      @map("pu_zone_id") @db.SmallInt
+  doZoneId   Int      @map("do_zone_id") @db.SmallInt
+  trips      Int
+  revenue    Float
+  distanceMi Float    @map("distance_mi")
+  durationS  BigInt   @map("duration_s")
+
+  @@id([month, service, company, puZoneId, doZoneId])
+  @@index([month, puBorough])
+  @@map("od_flow_monthly")
+}
+
+/// ~1M individual trips of the last month with approximate positions (CLAUDE.md §5.6).
+model TripSample {
+  sampleId   Int      @id @map("sample_id")
+  service    String   @db.VarChar(8)
+  company    String   @db.VarChar(8)
+  pickupAt   DateTime @map("pickup_at") @db.Timestamp(0)
+  puZoneId   Int      @map("pu_zone_id") @db.SmallInt
+  doZoneId   Int?     @map("do_zone_id") @db.SmallInt
+  distanceMi Float    @map("distance_mi")
+  durationS  Int      @map("duration_s")
+  fare       Float
+  tips       Float
+  revenue    Float
+  waitS      Int?     @map("wait_s")
+  lon        Float?
+  lat        Float?
+
+  @@index([service, company])
+  @@index([puZoneId])
+  @@map("trip_sample")
+}
+
+/// Holt-Winters projection per day × service × borough for the additive metrics (CLAUDE.md §5.8).
+/// `kind` = "backtest" (month M fitted with data up to M−1) or "forecast" (after the data).
+model Projection {
+  date           DateTime @db.Date
+  service        String   @db.VarChar(8)
+  borough        String   @db.VarChar(16)
+  kind           String   @db.VarChar(8)
+  trips          Float
+  passengers     Float?
+  passengerTrips Float?   @map("passenger_trips")
+  revenue        Float
+  fare           Float
+  tips           Float
+  distanceMi     Float    @map("distance_mi")
+  durationS      Float    @map("duration_s")
+  airportTrips   Float    @map("airport_trips")
+  cardTrips      Float?   @map("card_trips")
+  cashTrips      Float?   @map("cash_trips")
+  cbdFee         Float    @map("cbd_fee")
+  waitS          Float?   @map("wait_s")
+  waitTrips      Float?   @map("wait_trips")
+  driverPay      Float?   @map("driver_pay")
+  sharedTrips    Float?   @map("shared_trips")
+
+  @@id([date, service, borough])
+  @@map("projection")
+}
+
+/// Seed bookkeeping (snapshot version/checksum, seeded at, ...).
+model SeedMeta {
+  key       String   @id @db.VarChar(64)
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("seed_meta")
+}

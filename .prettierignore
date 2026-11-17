@@ -7,3 +7,4 @@ pnpm-lock.yaml
 **/test-results
 api/data
 api/etl/.cache
+api/src/generated

@@ -18,6 +18,7 @@ export default defineConfig([
     "**/test-results",
     "api/data",
     "api/etl/.cache",
+    "api/src/generated",
   ]),
 
   js.configs.recommended,
