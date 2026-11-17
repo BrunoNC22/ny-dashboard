@@ -39,7 +39,7 @@ export const yellowRow = (
   `SELECT ${String(id)}::INTEGER AS VendorID, TIMESTAMP '${pickup}' AS tpep_pickup_datetime, ` +
   `TIMESTAMP '${dropoff}' AS tpep_dropoff_datetime, ${String(pax)}::BIGINT AS passenger_count, ` +
   `${String(dist)}::DOUBLE AS trip_distance, ${pu === 0 ? "NULL" : String(pu)}::INTEGER AS PULocationID, ` +
-  `${String(dropZone)}::INTEGER AS DOLocationID, ${String(pay)}::BIGINT AS payment_type, ` +
+  `${dropZone === 0 ? "NULL" : String(dropZone)}::INTEGER AS DOLocationID, ${String(pay)}::BIGINT AS payment_type, ` +
   `${String(fare)}::DOUBLE AS fare_amount, ${String(tip)}::DOUBLE AS tip_amount, ` +
   `${String(total)}::DOUBLE AS total_amount, ${String(cbd)}::DOUBLE AS cbd_congestion_fee`;
 

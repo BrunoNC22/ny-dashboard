@@ -126,3 +126,9 @@ Só guarda **somas e contagens**. As métricas derivadas (médias e percentuais)
 ### `agg_hourly`: hora × serviço × empresa
 
 `hour` é a hora cheia do embarque no horário de NY (`date_trunc('hour', pickup_at)`). As colunas de métricas são as mesmas do `agg_daily_zone` (definidas em `etl/lib/metrics.ts`). Os testes garantem que a soma das horas de um dia bate com o agregado diário em todas as métricas.
+
+### `agg_od_monthly`: rotas mês × serviço × empresa × distrito de embarque
+
+Guarda as **500 rotas mais frequentes** (`OD_TOP_N`, em `etl/lib/sources.ts`) de cada grupo mês × serviço × empresa × distrito de embarque. As colunas são `trips`, `revenue`, `distance_mi` e `duration_s`. Corridas com zona de desembarque inválida são ignoradas.
+
+**Por que um ranking por distrito:** os pares origem → destino do FHVHV são muito dispersos. Em nov/2024, a Uber teve ~59 mil pares distintos, e o top 1.000 global cobria só 33% das corridas (no Yellow, cobria 69%). Com um ranking global, as rotas de distritos pequenos (Staten Island, Bronx) sumiriam quando o dashboard filtrasse por distrito.

@@ -1,10 +1,10 @@
 import { join } from "node:path";
 
-import type { Duck } from "./duckdb";
+import { type Duck, sqlString } from "./duckdb";
 import { METRIC_COLUMNS_DDL } from "./metrics";
 import type { Month } from "./months";
 import { nextMonth } from "./months";
-import { CACHE_DIR } from "./paths";
+import { CACHE_DIR, ZONES_DIR } from "./paths";
 import type { SourceReport } from "./pipeline";
 
 /**
@@ -13,6 +13,7 @@ import type { SourceReport } from "./pipeline";
  * The snapshot (#12) is exported from here.
  */
 export const ETL_DB_PATH = join(CACHE_DIR, "etl.duckdb");
+const ZONE_LOOKUP_PATH = join(ZONES_DIR, "taxi_zone_lookup.csv");
 
 /** Bump when a table definition changes; tables are recreated (and must be re-filled). */
 export const STORE_SCHEMA_VERSION = 1;
@@ -32,6 +33,21 @@ const TABLES = {
     company VARCHAR NOT NULL,
     pu_zone_id SMALLINT NOT NULL,${METRIC_COLUMNS_DDL}`,
   /** Hour × service × company (CLAUDE.md §5.6, table 2). Sums only. */
+  /**
+   * Top origin → destination routes per month × service × company × pickup borough
+   * (CLAUDE.md §5.6, table 3). Only the top OD_TOP_N routes of each group are kept.
+   */
+  agg_od_monthly: `
+    month DATE NOT NULL,
+    service VARCHAR NOT NULL,
+    company VARCHAR NOT NULL,
+    pu_borough VARCHAR NOT NULL,
+    pu_zone_id SMALLINT NOT NULL,
+    do_zone_id SMALLINT NOT NULL,
+    trips BIGINT NOT NULL,
+    revenue DOUBLE NOT NULL,
+    distance_mi DOUBLE NOT NULL,
+    duration_s DOUBLE NOT NULL`,
   agg_hourly: `
     hour TIMESTAMP NOT NULL,
     service VARCHAR NOT NULL,
@@ -57,7 +73,18 @@ export const ensureStore = async (duck: Duck): Promise<void> => {
   for (const [table, columns] of Object.entries(TABLES)) {
     await duck.run(`CREATE TABLE IF NOT EXISTS ${table} (${columns})`);
   }
+  await loadZones(duck);
 };
+
+/** Zone → borough id (same mapping as `toBoroughId`), from the versioned lookup CSV. */
+const loadZones = (duck: Duck): Promise<void> =>
+  duck.run(`
+    CREATE OR REPLACE TABLE zones AS
+    SELECT
+      LocationID::SMALLINT AS zone_id,
+      CASE WHEN Borough IN ('Unknown', 'N/A') THEN 'unknown'
+           ELSE lower(replace(Borough, ' ', '_')) END AS borough
+    FROM read_csv(${sqlString(ZONE_LOOKUP_PATH)}, header = true)`);
 
 /** Replaces the rows of one month × service in a date-keyed table inside a transaction. */
 export const replaceMonth = async (

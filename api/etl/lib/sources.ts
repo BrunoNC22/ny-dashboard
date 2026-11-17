@@ -19,6 +19,13 @@ export const LIMITS = {
   maxFare: 1000,
 } as const;
 
+/**
+ * Routes kept per month × service × company × pickup borough in agg_od_monthly. Per-borough
+ * ranking keeps routes of small boroughs (FHVHV pairs are very dispersed: the global top 1,000
+ * covers only ~33% of Uber trips). See CLAUDE.md §13.
+ */
+export const OD_TOP_N = 500;
+
 /** Airports: EWR (1), JFK (132), LGA (138). */
 export const AIRPORT_ZONES = [1, 132, 138] as const;
 

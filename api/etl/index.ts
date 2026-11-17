@@ -28,13 +28,14 @@ import { tripDataUrl } from "./lib/sources";
 import { ensureStore, ETL_DB_PATH, saveSourceReport } from "./lib/store";
 import { dailyZoneStep } from "./steps/dailyZone";
 import { hourlyStep } from "./steps/hourly";
+import { odMonthlyStep } from "./steps/odMonthly";
 
 /** Snapshot period (CLAUDE.md §5.2). */
 const DEFAULT_FROM: Month = "2024-10";
 const DEFAULT_TO: Month = "2026-09";
 
 /** Aggregation steps (#8–#11). */
-const STEPS: EtlStep[] = [dailyZoneStep, hourlyStep];
+const STEPS: EtlStep[] = [dailyZoneStep, hourlyStep, odMonthlyStep];
 
 const parseServices = (value: string): Service[] =>
   value.split(",").map((service) => serviceSchema.parse(service.trim()));
