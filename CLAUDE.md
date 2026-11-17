@@ -257,6 +257,14 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - O Tailwind mapeia as cores (`bg-surface`, `text-ink`, `bg-series-1`, `bg-accent-gradient`…) via `@theme inline`.
   - Utilitários: `glass`, `border-gradient`, `glow`, `text-accent-gradient` e `page-backdrop`.
   - Os contrastes são testados: texto ≥ AA em todas as superfícies, texto sobre o gradiente de destaque ≥ 4,5:1 e séries escuras ≥ 3:1.
+- **Estilo dos gráficos (#31, `web/src/charts/chartTheme.ts`, arquivo único):**
+  - Registra os controllers e escalas do Chart.js usados, o adapter de datas (date-fns, pt-BR) e os plugins **glow** (brilho na cor da série; desligado em traços tracejados e barras) e **crosshair** (linha vertical no hover).
+  - `applyChartDefaults` aplica os tokens a `Chart.defaults`, sempre **alterando campos, nunca substituindo objetos**. Substituir `defaults.animation` quebrou o Chart.js com `this._fn is not a function`. As escalas cartesianas compartilham `Chart.defaults.scale` (no singular).
+  - Helpers:
+    - `areaFill` (gradiente vertical), `comparisonStyle` (tracejado), `projectionStyle` (pontilhado);
+    - `stackedBarStyle` (2 px de espaço entre segmentos), `seriesColor` (ordem fixa; acima do 8º slot vira "Outros");
+    - `pointStyle` (forma por categoria), `timeScale` (formatos pt-BR) e `largeDataOptions` (acima de 1.000 pontos: sem animação, `parsing: false` e decimação LTTB).
+  - `useChartTheme()` acompanha `<html data-theme data-palette>` (via `useThemeAttributes`, com MutationObserver) e reaplica os defaults. A `/_ds` tem uma seção que mostra todos os estilos.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.

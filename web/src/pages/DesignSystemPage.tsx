@@ -2,6 +2,7 @@ import { type Palette, PALETTES, type Theme } from "@ny-dashboard/shared";
 import { BarChart3, Moon, Plus, Settings2, Sparkles, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { ChartsDemo } from "../charts/ChartsDemo";
 import {
   Badge,
   Button,
@@ -245,6 +246,8 @@ export function DesignSystemPage() {
           </div>
         </Card>
       </section>
+
+      <ChartsDemo />
 
       <Modal
         open={modal}

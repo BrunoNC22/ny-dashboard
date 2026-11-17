@@ -3,6 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
+// Canvas charts cannot render in jsdom: the design system page test only checks the controls.
+vi.mock("react-chartjs-2", () => ({
+  Bar: () => null,
+  Doughnut: () => null,
+  Line: () => null,
+  Radar: () => null,
+  Scatter: () => null,
+}));
+
 import {
   Badge,
   Button,
