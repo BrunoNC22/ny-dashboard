@@ -114,6 +114,7 @@ Fluxo esperado de quem clona o repo: `docker compose up` → abre o navegador �
 ### 5.3 Pipeline (ETL → snapshot → seed)
 
 1. `pnpm etl` (em `api/`) **baixa cada parquet com um único GET, um arquivo por vez** (com retry e backoff exponencial), e o DuckDB normaliza, limpa e agrega localmente. Cada arquivo é **apagado depois de processado** (`--keep-cache` mantém). A leitura remota com requisições paralelas por faixa de bytes fez o CloudFront da TLC bloquear o IP, por isso não é usada.
+   Os agregados se acumulam em `api/etl/.cache/etl.duckdb` (fora do git). Cada etapa substitui as linhas do mês × serviço que processa, então reexecutar é idempotente.
 2. O resultado é um **snapshot agregado versionado no repo**, em `api/data/snapshot/` (CSV gzip, em chunks de **≤ 45 MB** cada, por causa do limite de 100 MB por arquivo do GitHub), com um `manifest.json` contendo o período, contagens de linhas, checksums e a data de geração.
 3. O **seed** carrega o snapshot no Postgres (via `COPY`, por desempenho). O seed funciona **offline**, sem baixar nada.
 4. **Atualização mensal: manual.** Rodar `pnpm etl` e commitar o snapshot novo. (Sem GitHub Action agendado.)
@@ -320,6 +321,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | ETL (#8): agregados acumulados em `etl.duckdb`. Durante as #8 a #12, os parquets dos 24 meses (~14 GB) ficam em cache (`--keep-cache`) para reprocessar sem baixar de novo. **O cache deve ser apagado ao fim da #12.**                                       |
 | 2026-11-17 | ETL (#7): download sequencial com retry e remoção depois do processamento (sem leitura remota); novas regras de limpeza (tarifa > US$ 1.000, velocidade > 80 mph); % cartão = cartão ÷ (cartão + dinheiro).                                                   |
 | 2026-11-17 | Zonas: mapshaper (0.7.x) em vez de DuckDB spatial para gerar o GeoJSON (#6), porque simplifica preservando a topologia.                                                                                                                                       |
 | 2026-11-17 | Contratos zod do `shared` (#3), com as decisões derivadas listadas na §13.                                                                                                                                                                                    |

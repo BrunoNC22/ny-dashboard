@@ -95,3 +95,30 @@ O ETL processa cada mês × serviço em sequência:
 | `non_positive_distance` | distância NULL ou ≤ 0                                                                                                                         |
 | `invalid_duration`      | duração ≤ 0 ou > 3 h                                                                                                                          |
 | `speed_over_limit`      | velocidade implícita > 80 mph. Pega leituras de distância quebradas (até 232.644 mi em set/2026) sem cortar viagens longas legítimas do FHVHV |
+
+## Armazenamento intermediário (`api/etl/.cache/etl.duckdb`)
+
+Os agregados se acumulam num banco DuckDB persistente, fora do git. Cada etapa **substitui as linhas do mês × serviço** que processa, dentro de uma transação. Por isso reexecutar um mês, ou uma faixa de meses, não duplica dados e não mexe nos outros meses. O snapshot (#12) é exportado desse banco.
+
+| Tabela           | Conteúdo                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| `etl_meta`       | versão do schema (se mudar, as tabelas são recriadas e precisam ser preenchidas de novo) |
+| `etl_sources`    | contagens lidas, mantidas e descartadas por motivo, para cada mês × serviço              |
+| `agg_daily_zone` | agregado diário (abaixo)                                                                 |
+
+### `agg_daily_zone`: dia × zona de embarque × serviço × empresa
+
+Só guarda **somas e contagens**. As métricas derivadas (médias e percentuais) são calculadas a partir delas na API. Colunas que não se aplicam a um serviço ficam NULL.
+
+| Coluna                                                            | Conteúdo                                                                             | NULL em      |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------ |
+| `date`                                                            | data do embarque (horário de NY)                                                     | —            |
+| `service`, `company`, `pu_zone_id`                                | chaves                                                                               | —            |
+| `trips`                                                           | corridas                                                                             | —            |
+| `passengers`, `passenger_trips`                                   | soma de passageiros e quantas corridas informaram passageiros (denominador da média) | FHVHV        |
+| `revenue`, `fare`, `tips`, `distance_mi`, `duration_s`, `cbd_fee` | somas                                                                                | —            |
+| `airport_trips`                                                   | corridas com embarque ou desembarque em EWR/JFK/LGA                                  | —            |
+| `card_trips`, `cash_trips`                                        | corridas pagas com cartão / dinheiro                                                 | FHVHV        |
+| `wait_s`, `wait_trips`                                            | soma do tempo de espera e quantas corridas têm esse tempo                            | Yellow/Green |
+| `driver_pay`                                                      | soma do pagamento ao motorista                                                       | Yellow/Green |
+| `shared_trips`                                                    | corridas compartilhadas                                                              | Yellow/Green |

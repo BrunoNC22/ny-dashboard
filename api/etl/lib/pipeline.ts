@@ -45,10 +45,10 @@ export const processSource = async (
 ): Promise<SourceReport> => {
   const columns = await duck.parquetColumns(parquetPath);
   await duck.run(
-    `CREATE OR REPLACE VIEW normalized AS ${normalizedTripsSql(service, parquetPath, columns, month)}`,
+    `CREATE OR REPLACE TEMP VIEW normalized AS ${normalizedTripsSql(service, parquetPath, columns, month)}`,
   );
   await duck.run(
-    `CREATE OR REPLACE VIEW trips AS SELECT ${NORMALIZED_COLUMNS.join(", ")} FROM normalized WHERE discard_reason IS NULL`,
+    `CREATE OR REPLACE TEMP VIEW trips AS SELECT ${NORMALIZED_COLUMNS.join(", ")} FROM normalized WHERE discard_reason IS NULL`,
   );
 
   const counts = await duck.all<{ reason: string | null; n: number }>(

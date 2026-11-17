@@ -25,13 +25,15 @@ import {
   type SourceReport,
 } from "./lib/pipeline";
 import { tripDataUrl } from "./lib/sources";
+import { ensureStore, ETL_DB_PATH, saveSourceReport } from "./lib/store";
+import { dailyZoneStep } from "./steps/dailyZone";
 
 /** Snapshot period (CLAUDE.md §5.2). */
 const DEFAULT_FROM: Month = "2024-10";
 const DEFAULT_TO: Month = "2026-09";
 
 /** Aggregation steps (#8–#11). */
-const STEPS: EtlStep[] = [];
+const STEPS: EtlStep[] = [dailyZoneStep];
 
 const parseServices = (value: string): Service[] =>
   value.split(",").map((service) => serviceSchema.parse(service.trim()));
@@ -52,7 +54,8 @@ const main = async (): Promise<void> => {
     `etl        ${months[0] ?? ""} → ${months.at(-1) ?? ""}, services: ${services.join(", ")}`,
   );
 
-  const duck = await Duck.open();
+  const duck = await Duck.open(ETL_DB_PATH);
+  await ensureStore(duck);
   const reports: SourceReport[] = [];
   try {
     for (const month of months) {
@@ -62,6 +65,7 @@ const main = async (): Promise<void> => {
         });
         const report = await processSource(duck, service, month, path, STEPS);
         reports.push(report);
+        await saveSourceReport(duck, report);
         console.log(formatReport(report));
         if (!values["keep-cache"]) await removeFromCache(path);
       }
