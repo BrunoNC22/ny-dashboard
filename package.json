@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r --if-present run typecheck",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:coverage": "pnpm -r --if-present run test:coverage"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "5.30.3",

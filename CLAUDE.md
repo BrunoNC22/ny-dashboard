@@ -253,6 +253,11 @@ Todos os payloads são validados com schemas zod de `shared`. Fluxo MVC: `routes
 ## 10. Testes e qualidade
 
 - **Unidade (Vitest):** `shared`, `api` (services, Holt-Winters, transformações do ETL) e `web` (componentes com Testing Library + jsdom, stores, chartTheme).
+- **Configuração:**
+  - Cada pacote tem o seu `vitest.config.ts`: `node` em api e shared, `jsdom` no web, com setup em `web/src/test/setup.ts` (matchers do jest-dom).
+  - Os testes ficam em `src/**/*.test.ts(x)`, normalmente em `__tests__/`.
+  - Scripts `test`, `test:watch` e `test:coverage` (cobertura v8: relatórios text, html e lcov em `coverage/`).
+  - O `@testing-library/react` entra junto com o React, na #29.
 - **Integração (Vitest + Supertest):** a API contra um **Postgres real**, com um conjunto pequeno de dados de teste.
 - **E2E (Playwright):** contra o stack do docker compose. Cobre: login como demo; adicionar, editar, mover, redimensionar e remover widget; persistência entre dois contextos de navegador; independência entre desktop e mobile; tema e paleta.
 - **CI (GitHub Actions):** lint, typecheck, testes de unidade e integração (com um service Postgres), build das imagens e E2E.
