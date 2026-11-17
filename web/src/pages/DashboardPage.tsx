@@ -5,6 +5,7 @@ import { AppHeader } from "../components/shell/AppHeader";
 import { useHistoryShortcuts } from "../components/shell/useHistoryShortcuts";
 import { Skeleton } from "../components/ui";
 import { useDashboardSync } from "../stores/useDashboardSync";
+import { WidgetEditor } from "../widgets/editor/WidgetEditor";
 import { WidgetGallery } from "../widgets/WidgetGallery";
 import { WidgetRenderer } from "../widgets/WidgetRenderer";
 
@@ -33,6 +34,7 @@ export function DashboardPage() {
       </main>
       <AppFooter />
       <WidgetGallery />
+      <WidgetEditor />
     </div>
   );
 }

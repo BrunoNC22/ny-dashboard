@@ -336,11 +336,24 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - Cada widget tem um error boundary próprio, que se recupera quando a configuração muda.
   - Os tipos ainda não implementados usam `PlaceholderWidget`, substituído tipo a tipo nas #43 a #49.
 - **Galeria (#41, `web/src/widgets/templates.ts` e `WidgetGallery.tsx`):**
-  - 31 modelos prontos em 6 grupos (KPIs, Séries temporais, Composição, Distribuição, Mapas, Tabelas), com busca que ignora maiúsculas e acentos.
+  - 33 modelos prontos em 6 grupos (KPIs, Séries temporais, Composição, Distribuição, Mapas, Tabelas), com busca que ignora maiúsculas e acentos.
   - Os modelos "pesados" (série horária de 24 meses, scatter de 1 milhão, pontos no mapa) têm um selo **pesado**, porque carregam muitos dados de propósito (§8).
   - Os modelos da amostra (scatter, bubble, heatmap, pontos, hexágonos) já vêm com o período travado no mês da amostra.
   - Ao escolher: o widget ganha um id novo, entra no fim dos dois layouts com o tamanho padrão do registro, a galeria fecha, a página rola até ele e um toast sugere o lápis para personalizar. Entra no desfazer.
   - Um teste valida todos os modelos contra o `widgetConfigSchema`.
+- **Editor de widget (#42, `web/src/widgets/editor`):**
+  - Modal com o formulário à esquerda e a **prévia ao vivo** à direita (o próprio `WidgetRenderer` em modo prévia, sem ações nem arraste). No mobile, a prévia fica abaixo.
+  - Campos comuns: título e **tipo**, que só troca dentro da mesma família (séries: linha/área/barras/empilhadas; categóricos: rosca/pizza/radar/área polar/ranking; amostra: dispersão/bolhas). A conversão (`convertWidgetType`) mantém os campos que continuam valendo: barras empilhadas ganham `groupBy: service` se não houver; bolhas ganham raio pela gorjeta.
+  - Aba **Dados**, com campos por tipo:
+    - séries: métrica, granularidade, agrupamento e projeção (desligada por hora);
+    - categóricos: métrica, dimensão e máximo de categorias;
+    - amostra: eixos, raio e cor;
+    - KPI: minigráfico, direção (padrão da métrica ou invertida), status pela comparação (faixa estável) e pela meta (valor e faixa de atenção);
+    - tabela: linhas, colunas (até 6), ordenação e quantidade;
+    - mapa: métrica, camadas e cor.
+  - Aba **Filtros**: cada filtro tem um switch "próprio". Ligado, começa do valor global atual; desligado, o widget volta a seguir o global. A zona tem um seletor com busca.
+  - Salvar valida com o `widgetConfigSchema` (o botão fica desabilitado com a mensagem do erro) e entra no desfazer como um passo só. Cancelar descarta o rascunho.
+  - O rodapé tem **Duplicar** e **Remover**, que são o caminho no mobile.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
