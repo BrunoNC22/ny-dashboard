@@ -238,7 +238,7 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
 ## 8. Desempenho com muitos dados
 
 - **A API manda todos os pontos** pedidos, sem reduzir no servidor. Quem decide como desenhar é o Chart.js: o plugin de **decimação (LTTB)** fica ligado em gráficos de linha (o que exige `parsing: false`, eixo de tempo/linear e animação desligada em séries grandes).
-- **Comportamento esperado e documentado:** um scatter com a amostra de 1 milhão de corridas manda dezenas de MB em JSON e **vai ficar lento ou travar o Chart.js**. Isso é proposital, para demonstrar os limites. O mapa usa deck.gl (GPU), que aguenta esse volume.
+- **Comportamento esperado e documentado:** um scatter com a amostra de 1 milhão de corridas manda ~12,5 MB de JSON (3,7 MB com gzip; ~5 s na API) e **vai ficar lento ou travar o Chart.js**. Isso é proposital, para demonstrar os limites. O mapa usa deck.gl (GPU), que aguenta esse volume.
 
 ## 9. API (visão geral)
 
@@ -415,6 +415,16 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - `flows`: rotas principais, reaproveitando o breakdown por rota. Ficam de fora as rotas com as zonas 264/265, que não têm geometria. A resposta traz só os IDs das zonas: **o front pega os centróides do GeoJSON** (`properties.centroid`).
   - `points`: corridas da amostra com posição, em formato colunar, com a categoria (serviço ou empresa) codificada como índice em `categories`. O SQL agrega tudo em `array_agg`, então ~1 milhão de pontos chegam numa única linha.
   - Medido no local: 1 milhão de pontos = 20,8 MB de JSON em ~3 s (≈5,3 MB com o gzip do nginx); só os pontos do JFK = 435 KB em 0,09 s; zonas = 9 KB em 0,19 s.
+- **Corridas da amostra (#27, `POST /api/query/trips`, pública):**
+  - Eixos `x`/`y` (e `r` no bubble) escolhidos entre os campos da amostra (`TRIP_FIELDS_CATALOG` no `shared`: rótulo, unidade e coluna).
+  - O contrato ganhou `hours: { from, to }`, a faixa de horário do embarque; `from > to` cruza a meia-noite.
+  - Ficam de fora os serviços que não têm algum dos campos pedidos (ex.: espera só existe no FHVHV).
+  - **A API manda todos os pontos**, em formato colunar.
+  - **gzip** na API inteira (middleware `compression`).
+  - Medido no local:
+    - scatter de 1 milhão de pontos: **12,5 MB (3,7 MB com gzip) em ~4,5–5 s**;
+    - bubble de 1 milhão: 4,5 MB com gzip em ~6,3 s;
+    - scatter padrão (JFK): 87 KB em 0,22 s.
 
 ## 14. Roteiro
 

@@ -3,6 +3,7 @@ import {
   kpiRequestSchema,
   mapRequestSchema,
   timeseriesRequestSchema,
+  tripsRequestSchema,
 } from "@ny-dashboard/shared";
 import type { RequestHandler } from "express";
 
@@ -11,12 +12,14 @@ import type { BreakdownService } from "../services/breakdownService";
 import type { KpiService } from "../services/kpiService";
 import type { MapService } from "../services/mapService";
 import type { TimeseriesService } from "../services/timeseriesService";
+import type { TripsService } from "../services/tripsService";
 
 export const querySchemas = {
   timeseries: { body: timeseriesRequestSchema },
   kpi: { body: kpiRequestSchema },
   breakdown: { body: breakdownRequestSchema },
   map: { body: mapRequestSchema },
+  trips: { body: tripsRequestSchema },
 } as const;
 
 export interface QueryServices {
@@ -24,6 +27,7 @@ export interface QueryServices {
   kpi: KpiService;
   breakdown: BreakdownService;
   map: MapService;
+  trips: TripsService;
 }
 
 export interface QueryController {
@@ -31,6 +35,7 @@ export interface QueryController {
   kpi: RequestHandler;
   breakdown: RequestHandler;
   map: RequestHandler;
+  trips: RequestHandler;
 }
 
 /** Aggregated data queries (public: visitors use the dashboard too). */
@@ -52,5 +57,9 @@ export const createQueryController = (
   async map(_req, res) {
     const { body } = validated(res, querySchemas.map);
     res.json(await services.map.query(body));
+  },
+  async trips(_req, res) {
+    const { body } = validated(res, querySchemas.trips);
+    res.json(await services.trips.query(body));
   },
 });

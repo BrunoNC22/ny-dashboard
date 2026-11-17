@@ -11,6 +11,16 @@ export const tripsRequestSchema = z.object({
   r: tripFieldSchema.optional(),
   colorBy: colorBySchema,
   filters: queryFiltersSchema,
+  /**
+   * Pickup hour window (New York time), inclusive. `from > to` wraps around midnight
+   * (e.g. 22 → 4 = night trips).
+   */
+  hours: z
+    .object({
+      from: z.number().int().min(0).max(23),
+      to: z.number().int().min(0).max(23),
+    })
+    .optional(),
 });
 export type TripsRequest = z.infer<typeof tripsRequestSchema>;
 

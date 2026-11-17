@@ -1,3 +1,4 @@
+import compression from "compression";
 import cookieParser from "cookie-parser";
 import express, { type Express } from "express";
 import type { Logger } from "pino";
@@ -25,6 +26,8 @@ export const createApp = ({ logger, ...deps }: AppDependencies): Express => {
       autoLogging: { ignore: (req) => req.url === "/api/health" },
     }),
   );
+  // gzip responses (big payloads: points/trips; nginx does not compress twice).
+  app.use(compression());
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
 

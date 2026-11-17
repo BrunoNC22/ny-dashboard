@@ -1,4 +1,9 @@
-import type { MetricDirection, MetricId, Service } from "../primitives";
+import type {
+  MetricDirection,
+  MetricId,
+  Service,
+  TripField,
+} from "../primitives";
 
 /**
  * Base columns of the aggregated tables (sums and denominators; CLAUDE.md §5.4/§5.6).
@@ -338,4 +343,62 @@ export const computeMetric = (id: MetricId, sums: BaseSums): number | null => {
   const bottom = total(sums, denominator);
   if (bottom === null || bottom === 0) return null;
   return (scale * top) / bottom;
+};
+
+/** Numeric fields of the individual-trip sample (scatter/bubble axes). */
+export interface TripFieldDefinition {
+  id: TripField;
+  label: string;
+  unit: Unit;
+  /** Column in `trip_sample`. */
+  column: "distance_mi" | "duration_s" | "fare" | "tips" | "revenue" | "wait_s";
+  /** Services where the field exists. */
+  services: readonly Service[];
+}
+
+export const TRIP_FIELDS_CATALOG: Readonly<
+  Record<TripField, TripFieldDefinition>
+> = {
+  distance: {
+    id: "distance",
+    label: "Distância",
+    unit: "miles",
+    column: "distance_mi",
+    services: ALL,
+  },
+  duration: {
+    id: "duration",
+    label: "Duração",
+    unit: "seconds",
+    column: "duration_s",
+    services: ALL,
+  },
+  fare: {
+    id: "fare",
+    label: "Tarifa",
+    unit: "usd",
+    column: "fare",
+    services: ALL,
+  },
+  tips: {
+    id: "tips",
+    label: "Gorjeta",
+    unit: "usd",
+    column: "tips",
+    services: ALL,
+  },
+  revenue: {
+    id: "revenue",
+    label: "Receita",
+    unit: "usd",
+    column: "revenue",
+    services: ALL,
+  },
+  wait: {
+    id: "wait",
+    label: "Espera",
+    unit: "seconds",
+    column: "wait_s",
+    services: FHVHV,
+  },
 };

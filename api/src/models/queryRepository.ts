@@ -75,6 +75,30 @@ export interface QueryRepository {
   projectionBreakdown(query: ProjectionBreakdownQuery): Promise<KeyedRow[]>;
   /** Positioned trips of the sample (zones without geometry are excluded). */
   samplePoints(query: SamplePointsQuery): Promise<SamplePoints>;
+  /** Trip sample values for scatter/bubble charts. */
+  sampleTrips(query: SampleTripsQuery): Promise<SampleTrips>;
+}
+
+/** Columns of trip_sample usable as scatter/bubble axes. */
+export type SampleColumn =
+  "distance_mi" | "duration_s" | "fare" | "tips" | "revenue" | "wait_s";
+
+export interface SampleTripsQuery {
+  range: DateRange;
+  filters: TripFilters;
+  x: SampleColumn;
+  y: SampleColumn;
+  r?: SampleColumn;
+  colorBy: ColorBy;
+  /** Pickup hour window, inclusive; from > to wraps around midnight. */
+  hours?: { from: number; to: number };
+}
+
+export interface SampleTrips {
+  x: number[];
+  y: number[];
+  r: number[] | null;
+  category: string[];
 }
 
 export interface SamplePointsQuery {
@@ -418,7 +442,67 @@ export const buildSamplePointsSql = ({
   };
 };
 
+const SAMPLE_COLUMNS: ReadonlySet<string> = new Set([
+  "distance_mi",
+  "duration_s",
+  "fare",
+  "tips",
+  "revenue",
+  "wait_s",
+]);
+
+/** SQL of `sampleTrips` (array_agg, like samplePoints). Rows missing any axis are skipped. */
+export const buildSampleTripsSql = ({
+  range,
+  filters,
+  x,
+  y,
+  r,
+  colorBy,
+  hours,
+}: SampleTripsQuery) => {
+  for (const column of [x, y, r]) {
+    if (column !== undefined && !SAMPLE_COLUMNS.has(column)) {
+      throw new Error(`Unknown sample column ${column}`);
+    }
+  }
+  const p = new Params();
+  const { where, join } = sampleWhere(p, range, filters);
+  for (const column of [x, y, r])
+    if (column) where.push(`s.${column} IS NOT NULL`);
+  if (hours) {
+    const hour = "extract(hour FROM s.pickup_at)";
+    const from = p.add(hours.from, "int");
+    const to = p.add(hours.to, "int");
+    where.push(
+      hours.from <= hours.to
+        ? `${hour} BETWEEN ${from} AND ${to}`
+        : `(${hour} >= ${from} OR ${hour} <= ${to})`,
+    );
+  }
+  const agg = (expression: string) =>
+    `coalesce(array_agg(${expression} ORDER BY s.sample_id), '{}')`;
+  return {
+    sql: `SELECT ${agg(`s.${x}::float8`)} AS x, ${agg(`s.${y}::float8`)} AS y,
+                 ${r ? agg(`s.${r}::float8`) : "NULL"} AS r, ${agg(`s.${colorBy}`)} AS category
+          FROM trip_sample s ${join} WHERE ${where.join(" AND ")}`,
+    values: p.values,
+  };
+};
+
 export const createPrismaQueryRepository = (prisma: Db): QueryRepository => ({
+  async sampleTrips(query) {
+    const { sql, values } = buildSampleTripsSql(query);
+    const [row] = await prisma.$queryRawUnsafe<
+      { x: number[]; y: number[]; r: number[] | null; category: string[] }[]
+    >(sql, ...values);
+    return {
+      x: row?.x ?? [],
+      y: row?.y ?? [],
+      r: query.r ? (row?.r ?? []) : null,
+      category: row?.category ?? [],
+    };
+  },
   async samplePoints(query) {
     const { sql, values } = buildSamplePointsSql(query);
     const [row] = await prisma.$queryRawUnsafe<

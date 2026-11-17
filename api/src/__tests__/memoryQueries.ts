@@ -303,4 +303,46 @@ export const createMemoryQueryRepository = (
       category: rows.map((row) => row[colorBy]),
     });
   },
+  sampleTrips({ range, filters, x, y, r, colorBy, hours }) {
+    const value = (row: SampleFixture, column: string): number | null => {
+      switch (column) {
+        case "distance_mi":
+          return row.distance;
+        case "duration_s":
+          return row.duration;
+        case "wait_s":
+          return row.wait;
+        case "fare":
+          return row.fare;
+        case "tips":
+          return row.tips;
+        default:
+          return row.revenue;
+      }
+    };
+    const inHours = (row: SampleFixture) => {
+      if (!hours) return true;
+      const hour = Number(row.pickupAt.slice(11, 13));
+      return hours.from <= hours.to
+        ? hour >= hours.from && hour <= hours.to
+        : hour >= hours.from || hour <= hours.to;
+    };
+    const rows = (fixtures.sample ?? []).filter(
+      (row) =>
+        row.pickupAt.slice(0, 10) >= range.from &&
+        row.pickupAt.slice(0, 10) <= range.to &&
+        filters.services.includes(row.service) &&
+        includes(filters.companies, row.company) &&
+        includes(filters.boroughs, ZONE_BOROUGH[row.zone] ?? "unknown") &&
+        includes(filters.zones, row.zone) &&
+        inHours(row) &&
+        [x, y, r].every((c) => c === undefined || value(row, c) !== null),
+    );
+    return Promise.resolve({
+      x: rows.map((row) => value(row, x) ?? 0),
+      y: rows.map((row) => value(row, y) ?? 0),
+      r: r ? rows.map((row) => value(row, r) ?? 0) : null,
+      category: rows.map((row) => row[colorBy]),
+    });
+  },
 });
