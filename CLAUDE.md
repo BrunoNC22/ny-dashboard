@@ -380,6 +380,14 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - O widget mostra o número de corridas e o **tempo de desenho medido** por um plugin (`beforeInit` → primeiro `afterRender`). No Chromium headless aparece 0 ms por causa do tempo virtual.
   - Avisos: posição aproximada (a TLC não publica coordenadas) e período fora do mês da amostra.
   - Verificado no navegador: JFK (21 mil pontos), bolhas no LaGuardia e a amostra completa (1 milhão).
+- **KPI (#46, `web/src/widgets/kpi`):**
+  - Linha 1: o valor compacto (o valor completo fica no `title`), sozinho na linha para não ser truncado.
+  - Linha 2: o **status** (bom/atenção/ruim/sem avaliação) com ícone, texto e glow na cor de status, a variação (`DeltaBadge`, com a direção do KPI e a faixa estável) e, em cards largos, o valor comparado.
+  - Linha 3: a meta, com o % atingido e uma barra de progresso.
+  - Por último o **sparkline**, uma área sem eixos na cor da 1ª série (as cores de status ficam só no selo), que é a única parte que encolhe.
+  - Container queries escondem o texto do status (fica para leitor de tela), a meta e o valor comparado em cards estreitos. Verificado no 1×3 do mobile em 360 px.
+  - No KPI, o cabeçalho do frame mostra o **ícone da métrica** (do catálogo) em vez do ícone do tipo. `widgets/metricIcons.ts` mapeia só os ícones do catálogo (o mapa inteiro do lucide incharia o bundle), e um teste garante que cobre todas as métricas.
+  - Helpers do sparkline (`sparklineOptions`/`sparklineDataset`) ficam no `chartTheme.ts`.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.

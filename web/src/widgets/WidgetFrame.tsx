@@ -6,6 +6,7 @@ import { DRAG_HANDLE_CLASS } from "../components/grid/gridConfig";
 import { cn, IconButton, toast, Tooltip } from "../components/ui";
 import { useDashboardStore } from "../stores/dashboardStore";
 import { useUiStore } from "../stores/uiStore";
+import { metricIcon } from "./metricIcons";
 import { widgetDefinition, widgetIcon } from "./registry";
 import { overriddenFilterLabels } from "./resolveFilters";
 
@@ -51,7 +52,9 @@ export function WidgetFrame({
           className="grid size-7 shrink-0 place-items-center rounded-lg bg-accent-gradient text-on-accent"
           title={label}
         >
-          {widgetIcon(widget.type, 15)}
+          {widget.type === "kpi"
+            ? metricIcon(widget.metric, 15)
+            : widgetIcon(widget.type, 15)}
         </span>
         <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
           {widget.title}

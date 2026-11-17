@@ -379,3 +379,33 @@ export const cartesianOptions = <T extends "line" | "bar">(): ChartOptions<T> =>
     plugins: { legend: { display: true } },
     scales: { y: { beginAtZero: true, ticks: { maxTicksLimit: 6 } } },
   }) as unknown as ChartOptions<T>;
+
+/**
+ * KPI sparkline: a bare area line (no axes, legend, tooltip or events), in the first series
+ * color — status colors stay reserved for the status badge.
+ */
+export const sparklineOptions = (): ChartOptions<"line"> => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false,
+  events: [],
+  layout: { padding: { top: 2, bottom: 0 } },
+  scales: {
+    x: { type: "linear", display: false },
+    y: { display: false, beginAtZero: false },
+  },
+  plugins: { legend: { display: false }, tooltip: { enabled: false } },
+});
+
+export const sparklineDataset = (theme: ChartTheme) => {
+  const color = seriesColor(theme, 0);
+  return {
+    borderColor: color,
+    backgroundColor: areaFill(color),
+    fill: "origin" as const,
+    borderWidth: 1.5,
+    pointRadius: 0,
+    tension: 0.35,
+    spanGaps: true,
+  };
+};

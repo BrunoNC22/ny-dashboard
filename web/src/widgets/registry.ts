@@ -22,6 +22,7 @@ import {
 } from "react";
 
 import { CategoricalWidget } from "./categorical/CategoricalWidget";
+import { KpiWidget } from "./kpi/KpiWidget";
 import { PlaceholderWidget } from "./PlaceholderWidget";
 import { TimeSeriesWidget } from "./series/TimeSeriesWidget";
 import type { GridSize, WidgetDefinition, WidgetProps } from "./types";
@@ -71,7 +72,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: Gauge,
     group: "kpi",
     sizes: size([2, 3, 2, 3], [1, 3, 1, 3]),
-    component: placeholder(),
+    component: KpiWidget,
   },
   line: {
     type: "line",
