@@ -324,6 +324,18 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - As tabelas de dados espelham o snapshot (`trip_daily`, `trip_hourly`, `od_flow_monthly`, `trip_sample`, `zones`).
   - `projection` usa formato **largo**: uma linha por dia × serviço × distrito, com as mesmas colunas de métricas somáveis. A projeção **não separa por empresa**.
   - Scripts: `db:migrate`, `db:deploy`, `db:generate` e `db:studio`.
+- **Catálogo de métricas (#15, `shared/src/catalog`):**
+  - Cada métrica é `escala × Σnumerador ÷ Σdenominador` sobre as 16 colunas-base (`BASE_COLUMNS`). API e front usam o mesmo `computeMetric`.
+  - Um teste garante que `BASE_COLUMNS` bate com as colunas do ETL e com as do Prisma.
+  - **Uma métrica só é calculada sobre os serviços onde existe** (`applicableServices`). Exemplo: % compartilhadas com Yellow + FHVHV selecionados usa só as corridas do FHVHV. Se nenhum serviço selecionado tiver a métrica, o resultado é "não se aplica".
+  - **Direção padrão dos KPIs** na perspectiva do negócio/operação:
+    - menor é melhor: duração média, espera média, % dinheiro;
+    - maior é melhor: todas as outras.
+    - Cada KPI pode inverter a direção.
+  - Dia da semana segue a ISO (1 = segunda … 7 = domingo).
+  - Rótulos de serviço: "Yellow Taxi", "Green Taxi" e "Apps (Uber/Lyft)".
+  - Valores ausentes aparecem como "—".
+  - Os ícones são nomes do lucide (kebab-case).
 
 ## 14. Roteiro
 
