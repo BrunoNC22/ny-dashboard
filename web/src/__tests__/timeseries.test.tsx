@@ -290,6 +290,30 @@ describe("chart config", () => {
     ).not.toHaveProperty("animations");
   });
 
+  it("bars appear left to right, each with a vivid-to-pastel gradient", () => {
+    const datasets = buildDatasets(response({ comparison: null }), {
+      widget: { ...line, type: "bar" },
+      periodFrom: "2026-09-01",
+      comparisonMode: "none",
+      comparisonLabel: "",
+    });
+    const { data, options } = seriesChartConfig(datasets, {
+      ...base,
+      type: "bar",
+    });
+    const delay = (options.animation as { delay: (ctx: object) => number })
+      .delay;
+    expect(delay({ type: "data", mode: "default", dataIndex: 0 })).toBe(0);
+    expect(delay({ type: "data", mode: "default", dataIndex: 2 })).toBe(600);
+    const gradient = (
+      data.datasets[0] as unknown as {
+        nydGradient: { tip: string; base: string };
+      }
+    ).nydGradient;
+    expect(gradient.tip).toBe(theme.series[0]);
+    expect(gradient.base).not.toBe(gradient.tip);
+  });
+
   it("stacks bars on both axes", () => {
     const { type, options } = seriesChartConfig([], {
       ...base,

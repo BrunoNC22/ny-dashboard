@@ -463,3 +463,77 @@ export const progressiveLineAnimation = (
     },
   } as unknown as ChartOptions<"line">["animations"];
 };
+
+// ── Bars: left → right growth and per-bar gradient ─────────────────────────────
+
+/**
+ * Bars appear one after another from the start of the x axis, each still growing up from the
+ * base (Chart.js default bar animation), like a wave left → right.
+ */
+export const staggeredBarAnimation = (
+  points: number,
+  totalMs = PROGRESSIVE_DURATION_MS,
+) => {
+  const step = totalMs / Math.max(points, 1);
+  return {
+    duration: 500,
+    delay: (ctx: { type: string; mode: string; dataIndex: number }) =>
+      ctx.type === "data" && ctx.mode === "default" ? ctx.dataIndex * step : 0,
+  };
+};
+
+/** Softer, lighter version of a series color (bottom of the bar gradient). */
+export const pastel = (hex: string, theme: ChartTheme): string => {
+  const value = hex.replace("#", "");
+  const amount = theme.theme === "dark" ? 0.42 : 0.55;
+  const channel = (i: number) =>
+    Math.round(
+      parseInt(value.slice(i, i + 2), 16) +
+        (255 - parseInt(value.slice(i, i + 2), 16)) * amount,
+    )
+      .toString(16)
+      .padStart(2, "0");
+  return `#${channel(0)}${channel(2)}${channel(4)}`;
+};
+
+/** Dataset option read by `barGradientPlugin`: colors at the tip and at the base of each bar. */
+export interface BarGradient {
+  tip: string;
+  base: string;
+}
+
+/**
+ * Per-bar vertical gradient: vivid color at the tip, pastel at the base (stacked segments too).
+ * Computed from each bar's live geometry before every draw, so it follows the grow animation.
+ * Datasets opt in with `nydGradient: { tip, base }`; their `backgroundColor` stays the solid
+ * color (legend and tooltip swatches).
+ */
+export const barGradientPlugin: Plugin = {
+  id: "nydBarGradient",
+  beforeDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((dataset, index) => {
+      const colors = (dataset as { nydGradient?: BarGradient }).nydGradient;
+      const meta = chart.getDatasetMeta(index);
+      if (!colors || meta.type !== "bar") return;
+      for (const element of meta.data) {
+        const { y, base } = element.getProps(["y", "base"]) as {
+          y: number;
+          base: number;
+        };
+        if (!Number.isFinite(y) || !Number.isFinite(base) || y === base)
+          continue;
+        const gradient = ctx.createLinearGradient(0, y, 0, base);
+        gradient.addColorStop(0, colors.tip);
+        gradient.addColorStop(1, colors.base);
+        // Options objects can be shared between elements: give this bar its own copy.
+        const target = element as unknown as {
+          options: Record<string, unknown>;
+        };
+        target.options = { ...target.options, backgroundColor: gradient };
+      }
+    });
+  },
+};
+
+Chart.register(barGradientPlugin);

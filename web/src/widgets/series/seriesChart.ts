@@ -13,10 +13,12 @@ import {
   type ChartTheme,
   comparisonStyle,
   largeDataOptions,
+  pastel,
   progressiveLineAnimation,
   projectionStyle,
   seriesColor,
   stackedBarStyle,
+  staggeredBarAnimation,
   timeScale,
 } from "../../charts/chartTheme";
 import type { SeriesDataset, SeriesPoint } from "./transform";
@@ -102,6 +104,8 @@ export const seriesChartConfig = (
         ...(stacked
           ? stackedBarStyle(theme, color)
           : { backgroundColor: color, borderRadius: 4 }),
+        // vivid at the tip, pastel at the base (barGradientPlugin)
+        nydGradient: { tip: color, base: pastel(color, theme) },
         stack: "current",
         maxBarThickness: 28,
       };
@@ -148,10 +152,13 @@ export const seriesChartConfig = (
     responsive: true,
     maintainAspectRatio: false,
     ...large,
-    // Lines and areas are drawn left → right (big series keep animation off: `large`).
-    ...(!bars && !("animation" in large)
-      ? { animations: progressiveLineAnimation(points) }
-      : {}),
+    // Lines are drawn left → right; bars appear left → right, each growing from the base.
+    // Big series keep animation off (`large`).
+    ...("animation" in large
+      ? {}
+      : bars
+        ? { animation: staggeredBarAnimation(points) }
+        : { animations: progressiveLineAnimation(points) }),
     interaction: { mode: "index", intersect: false },
     scales: {
       x: {

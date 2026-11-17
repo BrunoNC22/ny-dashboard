@@ -19,6 +19,7 @@ import { sparklineDataset, sparklineOptions } from "../../charts/chartTheme";
 import { useChartTheme } from "../../charts/useChartTheme";
 import { periodLabel } from "../../components/filters/periods";
 import { cn } from "../../components/ui";
+import { useCountUp } from "../../hooks/useCountUp";
 import { DeltaBadge } from "../DeltaBadge";
 import type { WidgetProps } from "../types";
 import { WidgetBody } from "../WidgetBody";
@@ -88,6 +89,8 @@ export function KpiWidget({ widget, filters }: WidgetProps<"kpi">) {
   const metric = METRICS[widget.metric];
   const direction = widget.evaluation.direction ?? metric.direction;
 
+  const shown = useCountUp(response?.value ?? null);
+
   const spark = useMemo(
     () =>
       response?.sparkline
@@ -134,7 +137,13 @@ export function KpiWidget({ widget, filters }: WidgetProps<"kpi">) {
         className="shrink-0 truncate text-xl leading-tight font-semibold text-ink tabular-nums @[12rem]:text-2xl @[18rem]:text-3xl"
         title={formatMetric(widget.metric, response.value)}
       >
-        {formatMetric(widget.metric, response.value, { compact: true })}
+        {/* Counts up to the value; screen readers get only the final value. */}
+        <span aria-hidden>
+          {formatMetric(widget.metric, shown, { compact: true })}
+        </span>
+        <span className="sr-only">
+          {formatMetric(widget.metric, response.value, { compact: true })}
+        </span>
       </p>
       <p
         className="flex min-w-0 shrink-0 items-center gap-1.5 text-xs text-ink-2"
