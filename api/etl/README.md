@@ -132,3 +132,15 @@ Só guarda **somas e contagens**. As métricas derivadas (médias e percentuais)
 Guarda as **500 rotas mais frequentes** (`OD_TOP_N`, em `etl/lib/sources.ts`) de cada grupo mês × serviço × empresa × distrito de embarque. As colunas são `trips`, `revenue`, `distance_mi` e `duration_s`. Corridas com zona de desembarque inválida são ignoradas.
 
 **Por que um ranking por distrito:** os pares origem → destino do FHVHV são muito dispersos. Em nov/2024, a Uber teve ~59 mil pares distintos, e o top 1.000 global cobria só 33% das corridas (no Yellow, cobria 69%). Com um ranking global, as rotas de distritos pequenos (Staten Island, Bronx) sumiriam quando o dashboard filtrasse por distrito.
+
+### `trip_sample`: amostra de ~1 milhão de corridas de set/2026
+
+As configurações ficam em `SAMPLE`, em `etl/lib/sources.ts`.
+
+1. **Candidatos (`run`):** no mês da amostra, cada serviço guarda até 1 milhão de corridas mantidas, **ordenadas por um hash determinístico** da corrida (`hash(...)` do DuckDB com o sufixo fixo `ny-dashboard-sample-v1`). Pegar as primeiras N dessa ordem dá uma amostra uniforme e reprodutível, que não depende do paralelismo.
+2. **Cotas (`finalize`):** depois de processar todos os serviços, as cotas por serviço são calculadas a partir das contagens em `etl_sources`. Cada serviço recebe primeiro um **piso de 50 mil** (ou todas as suas corridas, se tiver menos; o Green tem ~44 mil). O restante é dividido proporcionalmente. Em set/2026 isso dá: Green ~44 mil, Yellow ~176 mil e FHVHV ~780 mil.
+3. **Posição aproximada:** a TLC não publica coordenadas. Cada corrida recebe um **ponto aleatório dentro do polígono da zona de embarque**, por amostragem por rejeição na bounding box. O gerador (mulberry32) usa como semente os 32 bits baixos do hash da corrida, então a posição é sempre a mesma. Se a zona for estreita demais e não aceitar ponto depois de 1.000 tentativas, usa-se o `centroid` da zona. As zonas sem geometria (264/265) ficam com `lon`/`lat` NULL.
+
+Colunas: `sample_id` (1..N), `service`, `company`, `pickup_at`, `pu_zone_id`, `do_zone_id`, `distance_mi`, `duration_s`, `fare`, `tips`, `revenue`, `wait_s`, `lon` e `lat`.
+
+A reprodutibilidade depende da versão do DuckDB (a função `hash`), que está fixada no `package.json`.

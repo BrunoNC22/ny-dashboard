@@ -26,6 +26,14 @@ export const LIMITS = {
  */
 export const OD_TOP_N = 500;
 
+/** Individual-trip sample (CLAUDE.md §5.6, table 4): last month of the snapshot. */
+export const SAMPLE = {
+  month: "2026-09",
+  size: 1_000_000,
+  /** Minimum rows per service (or all its rows when it has fewer), so Green does not vanish. */
+  floorPerService: 50_000,
+} as const;
+
 /** Airports: EWR (1), JFK (132), LGA (138). */
 export const AIRPORT_ZONES = [1, 132, 138] as const;
 

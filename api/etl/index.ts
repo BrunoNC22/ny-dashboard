@@ -29,13 +29,19 @@ import { ensureStore, ETL_DB_PATH, saveSourceReport } from "./lib/store";
 import { dailyZoneStep } from "./steps/dailyZone";
 import { hourlyStep } from "./steps/hourly";
 import { odMonthlyStep } from "./steps/odMonthly";
+import { tripSampleStep } from "./steps/tripSample";
 
 /** Snapshot period (CLAUDE.md §5.2). */
 const DEFAULT_FROM: Month = "2024-10";
 const DEFAULT_TO: Month = "2026-09";
 
 /** Aggregation steps (#8–#11). */
-const STEPS: EtlStep[] = [dailyZoneStep, hourlyStep, odMonthlyStep];
+const STEPS: EtlStep[] = [
+  dailyZoneStep,
+  hourlyStep,
+  odMonthlyStep,
+  tripSampleStep,
+];
 
 const parseServices = (value: string): Service[] =>
   value.split(",").map((service) => serviceSchema.parse(service.trim()));
@@ -72,6 +78,7 @@ const main = async (): Promise<void> => {
         if (!values["keep-cache"]) await removeFromCache(path);
       }
     }
+    for (const step of STEPS) await step.finalize?.(duck);
   } finally {
     duck.close();
   }

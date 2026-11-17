@@ -302,6 +302,7 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Projeção (sobreposta ou como comparação) só para granularidade diária ou maior.
   - Usuário: 3 a 32 caracteres `[a-z0-9._-]`, convertido para minúsculas. Senha: de 8 caracteres a 72 bytes (o bcrypt ignora o que passa disso).
 - **Rotas origem → destino (#10):** são guardadas as **500 rotas mais frequentes por mês × serviço × empresa × distrito de embarque** (não um top N global). Os pares do FHVHV são muito dispersos (o top 1.000 global cobre só ~33% das corridas da Uber), e um ranking global apagaria as rotas de distritos pequenos quando o filtro de distrito fosse usado. Isso dá umas 250 mil linhas em 24 meses.
+- **Amostra de corridas (#11):** o piso por serviço é **50 mil corridas** (o Green tem só ~44 mil em set/2026 e entra inteiro), e o restante é proporcional (resultado: Yellow ~176 mil, FHVHV ~780 mil). A seleção é determinística, por hash da corrida. As corridas com embarque nas zonas 264/265, que não têm geometria, ficam com coordenadas NULL, e o mapa as ignora.
 
 ## 14. Roteiro
 

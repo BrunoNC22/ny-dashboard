@@ -1,4 +1,8 @@
-import { type DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
+import {
+  type DuckDBAppender,
+  type DuckDBConnection,
+  DuckDBInstance,
+} from "@duckdb/node-api";
 
 /** Converts BigInt values returned by DuckDB into numbers (counts fit in 2^53). */
 const toPlain = (value: unknown): unknown =>
@@ -38,6 +42,11 @@ export class Duck {
       `DESCRIBE SELECT * FROM read_parquet(${sqlString(path)})`,
     );
     return new Set(rows.map((row) => row.column_name));
+  }
+
+  /** Fast bulk insert into an existing table (call `closeSync()` on the appender when done). */
+  appender(table: string): Promise<DuckDBAppender> {
+    return this.connection.createAppender(table);
   }
 
   close(): void {

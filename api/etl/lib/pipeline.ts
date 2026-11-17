@@ -30,6 +30,8 @@ export interface StepContext {
 export interface EtlStep {
   name: string;
   run(context: StepContext): Promise<void>;
+  /** Optional work after every month × service of the run was processed. */
+  finalize?(duck: Duck): Promise<void>;
 }
 
 /**
