@@ -10,6 +10,17 @@
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>NY Dashboard</title>
+    <!-- Apply the last theme/palette before the first paint (no flash). Kept in sync with
+         APPEARANCE_KEY and the shared THEMES/PALETTES by a test. -->
+    <script>
+      try {
+        var a = JSON.parse(localStorage.getItem("nyd:appearance:v1") || "null");
+        var r = document.documentElement;
+        if (a && /^(light|dark)$/.test(a.theme)) r.dataset.theme = a.theme;
+        if (a && /^(aurora|sunset|ocean|neon|forest|mono)$/.test(a.palette))
+          r.dataset.palette = a.palette;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -301,6 +301,11 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - Arraste só pelo cabeçalho (classe `widget-drag-handle`, com `touch-action: none`); botões, links e campos dentro dele não iniciam arraste (`[data-no-drag]` também). Redimensionamento pelo canto inferior direito.
   - **Só as ações do usuário (`onDragStop`/`onResizeStop`) chegam ao store**, para o grid sincronizar o layout ao montar ou trocar de breakpoint sem marcar o dashboard como editado. O `onLayoutChange` não é usado.
   - Se a API estiver fora do ar, o app trata o usuário como visitante e o dashboard continua funcionando localmente.
+- **Preferências de tema/paleta (#39, `web/src/stores/preferencesStore.ts`):**
+  - `usePreferencesStore` aplica tema e paleta em `<html data-theme data-palette>`; gráficos e mapas seguem pelos atributos.
+  - **Sem flash:** a última aparência aplicada fica em `nyd:appearance:v1` e um script inline no `index.html` a aplica antes da primeira pintura. Ela é separada de `nyd:preferences:v1` (preferências do visitante), que também sinaliza "há algo para importar" (#34). Um teste confere que o script aceita exatamente `THEMES`/`PALETTES` do `shared`.
+  - `usePreferencesSync` (montado no `RootLayout`, vale para todas as páginas): logado usa `/api/preferences` (debounce de 300 ms, refetch no foco, sem sobrescrever mudança pendente); visitante usa o `localStorage`; ao sair, voltam as preferências do visitante.
+  - Em desenvolvimento, `?theme=&palette=` trava a aparência (`lock`) para os screenshots.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.

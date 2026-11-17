@@ -1,21 +1,32 @@
 import "./styles/index.css";
 
-import { PALETTES, THEMES } from "@ny-dashboard/shared";
+import {
+  type Palette,
+  PALETTES,
+  type Theme,
+  THEMES,
+} from "@ny-dashboard/shared";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
+import { usePreferencesStore } from "./stores/preferencesStore";
 
-// Dev convenience: ?theme=light&palette=sunset applies before the first paint (screenshots).
+// Dev convenience: ?theme=light&palette=sunset wins over saved preferences (screenshots).
 if (import.meta.env.DEV) {
   const params = new URLSearchParams(window.location.search);
   const theme = params.get("theme");
   const palette = params.get("palette");
-  if (theme && (THEMES as readonly string[]).includes(theme)) {
-    document.documentElement.dataset.theme = theme;
-  }
-  if (palette && (PALETTES as readonly string[]).includes(palette)) {
-    document.documentElement.dataset.palette = palette;
+  if (theme !== null || palette !== null) {
+    const current = usePreferencesStore.getState().preferences;
+    usePreferencesStore.getState().lock({
+      theme: (THEMES as readonly string[]).includes(theme ?? "")
+        ? (theme as Theme)
+        : current.theme,
+      palette: (PALETTES as readonly string[]).includes(palette ?? "")
+        ? (palette as Palette)
+        : current.palette,
+    });
   }
 }
 
