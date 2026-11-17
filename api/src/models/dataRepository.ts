@@ -41,7 +41,7 @@ export const createPrismaDataRepository = (prisma: Db): DataRepository => ({
     const companies = await prisma.$queryRaw<
       { service: string; company: string }[]
     >`
-      SELECT DISTINCT service, company FROM trip_hourly ORDER BY service, company`;
+      SELECT DISTINCT service, company FROM trip_daily ORDER BY service, company`;
     return {
       firstDate: days?.first ?? null,
       lastDate: days?.last ?? null,

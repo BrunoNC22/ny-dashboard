@@ -20,6 +20,12 @@ pnpm --filter @ny-dashboard/api dev          # API em http://localhost:3000/api/
 
 Checagens: `pnpm lint`, `pnpm format:check`, `pnpm typecheck` e `pnpm test`.
 
+Testes de integração da API (precisam do Postgres rodando; usam um banco separado `<DATABASE>_test`, recriado a cada execução):
+
+```sh
+pnpm --filter @ny-dashboard/api test:integration
+```
+
 ## Atribuições
 
 - Dados: [NYC Taxi & Limousine Commission — TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)

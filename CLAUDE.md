@@ -425,6 +425,13 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
     - scatter de 1 milhão de pontos: **12,5 MB (3,7 MB com gzip) em ~4,5–5 s**;
     - bubble de 1 milhão: 4,5 MB com gzip em ~6,3 s;
     - scatter padrão (JFK): 87 KB em 0,22 s.
+- **Testes de integração (#28, `pnpm --filter @ny-dashboard/api test:integration`):**
+  - Rodam com Postgres real, num banco separado: `TEST_DATABASE_URL`, ou o `DATABASE_URL` com o sufixo `_test`. O nome **precisa terminar em `_test`**, porque o setup faz `DROP DATABASE ... WITH (FORCE)` e recria o banco a cada execução.
+  - O `globalSetup` aplica as migrations (`prisma migrate deploy`) e carrega um **mini-snapshot determinístico** (ago–set/2026, gerado em `__integration__/snapshotFixture.ts`) **pelo seed de verdade**: COPY, checksums, projeções e usuário demo.
+  - Os testes usam `createDependencies` (`src/container.ts`), a mesma ligação de produção do `server.ts`.
+  - Os arquivos `*.int.test.ts` ficam fora do `pnpm test`.
+  - Cobrem auth, dashboard, preferências, meta/zones e todas as queries (incluindo comparação, projeção e granularidade horária), em ~5 s.
+  - O primeiro teste achou um bug: o `/api/meta` lia as empresas de `trip_hourly`; agora lê de `trip_daily`.
 
 ## 14. Roteiro
 
