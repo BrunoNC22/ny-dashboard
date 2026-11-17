@@ -15,7 +15,7 @@ cp .env.example .env              # variáveis locais (o git ignora este arquivo
 pnpm install                      # também gera o Prisma Client (postinstall)
 docker compose up -d db           # Postgres 18 em localhost:5432
 pnpm --filter @ny-dashboard/api db:migrate   # aplica as migrations
-pnpm --filter @ny-dashboard/api dev          # API em http://localhost:3000/api/health
+pnpm dev                          # API (:3000) + web (http://localhost:5173, proxy /api → API)
 ```
 
 Checagens: `pnpm lint`, `pnpm format:check`, `pnpm typecheck` e `pnpm test`.

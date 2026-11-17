@@ -432,6 +432,13 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Os arquivos `*.int.test.ts` ficam fora do `pnpm test`.
   - Cobrem auth, dashboard, preferências, meta/zones e todas as queries (incluindo comparação, projeção e granularidade horária), em ~5 s.
   - O primeiro teste achou um bug: o `/api/meta` lia as empresas de `trip_hourly`; agora lê de `trip_daily`.
+- **Web base (#29):**
+  - Vite 8 + React 19 + Tailwind v4 (`@tailwindcss/vite`).
+  - **React Router 8 em modo biblioteca** (`createBrowserRouter`, SPA), com as rotas `/`, `/login`, `/cadastro` e 404.
+  - TanStack Query (`staleTime` de 5 min e sem refetch no foco por padrão; dashboard e preferências ligam o refetch no foco) e Zustand.
+  - Fonte **Inter auto-hospedada** via `@fontsource-variable/inter`, sem requisição externa.
+  - O dev server roda na :5173 e repassa `/api` para a API (`VITE_API_PROXY`, padrão `http://localhost:3000`). `pnpm dev` na raiz sobe API e web juntos.
+  - Os testes de componentes usam Testing Library + `user-event`, com rotas via `createMemoryRouter`.
 
 ## 14. Roteiro
 

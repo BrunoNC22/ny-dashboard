@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+/* Design tokens, palettes and themes arrive with the design system (#30). */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-dvh bg-slate-950 font-sans text-slate-100 antialiased;
+  }
+}
