@@ -8,3 +8,4 @@ pnpm-lock.yaml
 api/data
 api/etl/.cache
 api/src/generated
+web/src/styles/tokens.generated.css

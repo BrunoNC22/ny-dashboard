@@ -231,7 +231,30 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
 ## 7. Visual
 
 - Estilo **"glass"**: cards translúcidos com `backdrop-blur`, bordas com gradiente, **brilho (glow)** na cor de destaque, gradientes nos fundos e nas áreas dos gráficos, e muitos ícones (lucide).
-- **6 paletas prontas** (nomes provisórios: Aurora, Sunset, Ocean, Neon, Forest, Mono), cada uma com variante clara e escura.
+- **6 paletas prontas** (Aurora, Sunset, Ocean, Neon, Forest, Mono), cada uma com variante clara e escura.
+- **Cores dos gráficos seguem o método de dataviz (validadas por script, nunca "no olho")** (#30):
+  - As 8 matizes categóricas são a paleta documentada de dataviz, com um degrau claro e um escuro.
+  - **Cada paleta é uma ORDEM diferente dessas 8 matizes** (um "tema"). Ela foi escolhida entre as 160 de 40.320 ordens que passam em todos os testes do validador **nos dois modos**, contra as superfícies do app (`#ffffff` / `#111827`):
+    - separação para daltonismo ΔE ≥ 8 entre vizinhos;
+    - visão normal ΔE ≥ 15;
+    - faixa de luminosidade e croma.
+  - Os 3 primeiros slots também passam o teste "todos os pares", o que **limita scatter, bubble e mapa a 3 séries**; acima disso, agrupar em "Outros" ou usar facetas.
+  - Ordens:
+    - Aurora: verde, violeta, magenta…
+    - Sunset: laranja, violeta, aqua…
+    - Ocean: azul, verde, magenta…
+    - Neon: magenta, verde, azul…
+    - Forest: verde, azul, magenta…
+    - Mono: a ordem de referência, com interface em cinzas.
+  - No tema claro, 3 matizes ficam abaixo de 3:1 sobre o branco. A regra de alívio vale: rótulos/tooltips ou a visualização em tabela.
+  - **Status** (bom/atenção/ruim), **sequencial** (azul 100→700) e **divergente** são fixos e não mudam com a paleta. O status aparece sempre com ícone + texto.
+- **Pipeline dos tokens:**
+  - `web/src/styles/tokens.ts` é a fonte única.
+  - `pnpm --filter @ny-dashboard/web tokens` gera `tokens.generated.css`, com variáveis `--nyd-*` por `[data-theme][data-palette]` no `<html>`. Um teste falha se o arquivo estiver desatualizado.
+  - O Tailwind mapeia as cores (`bg-surface`, `text-ink`, `bg-series-1`, `bg-accent-gradient`…) via `@theme inline`.
+  - Utilitários: `glass`, `border-gradient`, `glow`, `text-accent-gradient` e `page-backdrop`.
+  - Os contrastes são testados: texto ≥ AA em todas as superfícies, texto sobre o gradiente de destaque ≥ 4,5:1 e séries escuras ≥ 3:1.
+- **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
 
@@ -463,6 +486,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 | 2026-11-17 | Projeções (#19): backtest mensal e previsão até dez/2026 para todas as colunas-base aplicáveis, por serviço × distrito.                                                                                                                                       |
 | 2026-11-17 | Seed (#18): COPY em transação, idempotente pelo checksum do snapshot; bcryptjs em vez de bcrypt nativo.                                                                                                                                                       |
 | 2026-11-17 | Banco (#14): Prisma 7 + adapter pg, Postgres 18, estado do dashboard em JSON, projeção em formato largo por serviço × distrito.                                                                                                                               |
+| 2026-11-17 | Design system (#30): as paletas são ordens validadas das 8 matizes documentadas; tokens em TS geram o CSS; lucide-react fixado em 1.73.0 (a 1.74.0 tinha 1 h).                                                                                                |
 | 2026-11-17 | API (#13): Express 5 + pino; padrão de erros e de validação descritos na §13.                                                                                                                                                                                 |
 | 2026-11-17 | ETL (#8): agregados acumulados em `etl.duckdb`. Durante as #8 a #12, os parquets dos 24 meses (~14 GB) ficam em cache (`--keep-cache`) para reprocessar sem baixar de novo. **O cache deve ser apagado ao fim da #12.**                                       |
 | 2026-11-17 | ETL (#7): download sequencial com retry e remoção depois do processamento (sem leitura remota); novas regras de limpeza (tarifa > US$ 1.000, velocidade > 80 mph); % cartão = cartão ÷ (cartão + dinheiro).                                                   |

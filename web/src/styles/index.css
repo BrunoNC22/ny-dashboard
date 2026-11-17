@@ -1,17 +1,154 @@
 @import "tailwindcss";
 @import "@fontsource-variable/inter";
+@import "./tokens.generated.css";
 
-/* Design tokens, palettes and themes arrive with the design system (#30). */
-@theme {
+/* Theme/palette via <html data-theme="dark|light" data-palette="aurora|…"> (tokens.ts). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Tailwind colors → runtime variables, so utilities follow the active theme × palette. */
+@theme inline {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-page: var(--nyd-page);
+  --color-surface: var(--nyd-surface);
+  --color-surface-glass: var(--nyd-surface-glass);
+  --color-surface-2: var(--nyd-surface-2);
+  --color-border: var(--nyd-border);
+  --color-border-strong: var(--nyd-border-strong);
+  --color-ink: var(--nyd-ink);
+  --color-ink-2: var(--nyd-ink-2);
+  --color-muted: var(--nyd-muted);
+  --color-grid: var(--nyd-grid);
+  --color-axis: var(--nyd-axis);
+  --color-overlay: var(--nyd-overlay);
+  --color-accent: var(--nyd-accent);
+  --color-accent-2: var(--nyd-accent-2);
+  --color-on-accent: var(--nyd-on-accent);
+  --color-accent-glow: var(--nyd-accent-glow);
+  --color-series-1: var(--nyd-series-1);
+  --color-series-2: var(--nyd-series-2);
+  --color-series-3: var(--nyd-series-3);
+  --color-series-4: var(--nyd-series-4);
+  --color-series-5: var(--nyd-series-5);
+  --color-series-6: var(--nyd-series-6);
+  --color-series-7: var(--nyd-series-7);
+  --color-series-8: var(--nyd-series-8);
+  --color-good: var(--nyd-good);
+  --color-warning: var(--nyd-warning);
+  --color-serious: var(--nyd-serious);
+  --color-critical: var(--nyd-critical);
+  --color-success-text: var(--nyd-success-text);
+
+  --radius-card: 1.25rem;
+  --shadow-glow:
+    0 0 0 1px var(--nyd-accent-glow), 0 8px 32px -8px var(--nyd-accent-glow);
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-float: float 18s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(2%, -3%, 0) scale(1.06);
+    }
+  }
 }
 
 @layer base {
-  html {
-    color-scheme: dark;
+  body {
+    @apply min-h-dvh bg-page font-sans text-ink antialiased;
   }
 
-  body {
-    @apply min-h-dvh bg-slate-950 font-sans text-slate-100 antialiased;
+  :focus-visible {
+    outline: 2px solid var(--nyd-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--nyd-accent-glow);
+  }
+}
+
+/* Translucent card over the page glows. */
+@utility glass {
+  background-color: var(--nyd-surface-glass);
+  border: 1px solid var(--nyd-border);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+    0 10px 30px -12px rgb(0 0 0 / 0.35);
+}
+
+/* 1px gradient border (accent → accent-2) on top of any background. */
+@utility border-gradient {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--nyd-surface-glass), var(--nyd-surface-glass))
+      padding-box,
+    linear-gradient(135deg, var(--nyd-accent), var(--nyd-accent-2)) border-box;
+}
+
+@utility bg-accent-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--nyd-accent),
+    var(--nyd-accent-2)
+  );
+}
+
+@utility text-accent-gradient {
+  background-image: linear-gradient(
+    90deg,
+    var(--nyd-accent),
+    var(--nyd-accent-2)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Page background: two slow-moving accent glows (respects reduced motion). */
+@utility page-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      60vmax 60vmax at 10% 0%,
+      var(--nyd-page-glow-1),
+      transparent 60%
+    ),
+    radial-gradient(
+      50vmax 50vmax at 95% 15%,
+      var(--nyd-page-glow-2),
+      transparent 60%
+    ),
+    var(--nyd-page);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
