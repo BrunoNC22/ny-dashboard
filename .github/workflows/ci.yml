@@ -52,3 +52,67 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:coverage
+
+  integration:
+    name: API integration (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: ny
+          POSTGRES_PASSWORD: ny
+          POSTGRES_DB: ny_dashboard
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ny -d ny_dashboard"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # The suite resets <database>_test (it refuses any other name).
+      DATABASE_URL: postgresql://ny:ny@localhost:5432/ny_dashboard
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @ny-dashboard/api test:integration
+
+  e2e:
+    name: E2E (docker compose + Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build images and start the stack (migrations + seed)
+        # --wait: until db, api (after the seed) and web are healthy.
+        run: docker compose up --build --detach --wait --wait-timeout 600
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @ny-dashboard/web exec playwright install --with-deps chromium
+      - name: Run E2E
+        run: pnpm e2e
+        env:
+          E2E_BASE_URL: http://localhost:8080
+      - name: Stack logs
+        if: failure()
+        run: docker compose logs --no-color > compose-logs.txt
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-report
+          path: |
+            web/playwright-report
+            web/test-results
+            compose-logs.txt
+          retention-days: 7
