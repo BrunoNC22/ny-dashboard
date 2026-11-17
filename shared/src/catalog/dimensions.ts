@@ -14,6 +14,15 @@ export const COMPANY_LABELS: Readonly<Record<Company, string>> = {
   other: "Outras",
 };
 
+/** Service each company belongs to (Yellow/Green are their own company; CLAUDE.md §5.2). */
+export const COMPANY_SERVICE: Readonly<Record<Company, Service>> = {
+  yellow: "yellow",
+  green: "green",
+  uber: "fhvhv",
+  lyft: "fhvhv",
+  other: "fhvhv",
+};
+
 export const BOROUGH_LABELS: Readonly<Record<Borough, string>> = {
   manhattan: "Manhattan",
   brooklyn: "Brooklyn",

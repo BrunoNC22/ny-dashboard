@@ -39,13 +39,14 @@ export function Logo() {
 }
 
 /**
- * Sticky glass header. Desktop: save status, history, add widget, theme, palette and user.
- * Mobile (< md): add + a menu with the rest. The filters row (`filters`) sits below.
+ * Glass header, sticky from `md` (on phones it scrolls away to leave room for the widgets).
+ * Desktop: save status, history, add widget, theme, palette and user. Mobile (< md): add + a
+ * menu with the rest. The filters row (`filters`) sits below.
  */
 export function AppHeader({ filters }: { filters?: ReactNode }) {
   const openGallery = useUiStore((s) => s.openGallery);
   return (
-    <header className="glass sticky top-0 z-40 border-b border-border">
+    <header className="glass relative top-0 z-40 border-b border-border md:sticky">
       <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center gap-2 px-4">
         <Logo />
         <div className="flex-1" />

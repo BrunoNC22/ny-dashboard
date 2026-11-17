@@ -1,5 +1,6 @@
 import { GripVertical } from "lucide-react";
 
+import { FiltersBar } from "../components/filters/FiltersBar";
 import { DashboardGrid } from "../components/grid/DashboardGrid";
 import { DRAG_HANDLE_CLASS } from "../components/grid/gridConfig";
 import { AppFooter } from "../components/shell/AppFooter";
@@ -14,7 +15,7 @@ export function DashboardPage() {
   useHistoryShortcuts();
   return (
     <div className="flex min-h-dvh flex-col">
-      <AppHeader />
+      <AppHeader filters={<FiltersBar />} />
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6">
         <h1 className="sr-only">Dashboard</h1>
         {ready ? (

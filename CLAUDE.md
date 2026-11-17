@@ -316,6 +316,13 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - "Adicionar widget" abre a galeria pelo `useUiStore` (a galeria é a #41).
   - `Popover` (componente base) para os menus: fecha com Escape (devolve o foco) e com clique fora.
   - Verificado em 360 px sem scroll horizontal. O Chromium headless não vai abaixo de 500 px, então a checagem foi feita num iframe.
+- **Filtros globais (#38, `web/src/components/filters`):**
+  - Uma linha de chips abaixo do header (quebra linha no mobile): período, comparação, serviço, empresa e distrito. Toda mudança passa pelo store (entra no desfazer e no autosave).
+  - **Período:** grade de meses por ano (só meses inteiros dentro da cobertura de `/api/meta`), atalho "Último mês disponível" e intervalo personalizado (datas limitadas à cobertura).
+  - **Comparação:** período anterior, ano anterior, projeção × real (desabilitada fora do intervalo com projeção), intervalo personalizado (sugere os mesmos dias imediatamente antes) e sem comparação.
+  - **Serviço / empresa / distrito:** listas de `/api/meta`. Marcar todas as opções equivale a "Todos" (lista vazia). A empresa **só fica habilitada quando os apps (FHVHV) estão incluídos**; as opções são as empresas dos serviços selecionados (ex.: Yellow + apps → Yellow, Uber, Lyft), e mudar os serviços remove as empresas que deixaram de valer. `COMPANY_SERVICE` (no `shared`) mapeia empresa → serviço.
+  - Sem `/api/meta` (carregando ou API fora do ar), as opções vêm do catálogo do `shared` e do `DATA_COVERAGE`.
+  - No mobile, o header deixa de ser fixo (os filtros ocupam até 4 linhas) e o chip sem filtro mostra o nome do filtro em vez de "Todos". Os popovers viram painéis com a largura da tela.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
