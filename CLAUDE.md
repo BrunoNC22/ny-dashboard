@@ -148,7 +148,7 @@ Descartar corridas com: tarifa negativa; distância ≤ 0; duração ≤ 0 ou > 
 2. **Hora × serviço × empresa** → métricas base (séries horárias e cortes por hora do dia × dia da semana). São ~17,5 mil pontos por série em 24 meses.
 3. **Mês × origem → destino × serviço × empresa** → apenas as **top N rotas** por mês (para os arcos do mapa e a tabela de rotas).
 4. **Amostra de corridas individuais:** ~**1 milhão** de corridas de **set/2026** (último mês), dos 3 serviços (proporcional ao volume, com piso por serviço). Alimenta os widgets scatter/bubble e a camada de pontos do mapa.
-5. **Zonas:** GeoJSON WGS84 simplificado + lookup (zona, distrito, `service_zone`).
+5. **Zonas:** GeoJSON WGS84 simplificado + lookup (zona, distrito, `service_zone`). Gerado por `etl:zones` com o **mapshaper**, que simplifica preservando as fronteiras entre zonas (15% dos vértices; cerca de 500 KB, 263 zonas). Cada feature tem `id` = LocationID e as properties em camelCase (`locationId`, `zone`, `borough`, `boroughId`, `serviceZone`, `centroid`). O `centroid` é um ponto garantidamente dentro do polígono. Detalhes em `api/etl/README.md`.
 
 **A TLC não publica coordenadas** (só os IDs das zonas). Na amostra, cada corrida recebe uma **posição aleatória determinística (com seed fixa) dentro do polígono da sua zona de embarque**. A UI deve **avisar que a posição é aproximada**.
 
@@ -320,6 +320,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | Zonas: mapshaper (0.7.x) em vez de DuckDB spatial para gerar o GeoJSON (#6), porque simplifica preservando a topologia.                                                                                                                                       |
 | 2026-11-17 | Contratos zod do `shared` (#3), com as decisões derivadas listadas na §13.                                                                                                                                                                                    |
 | 2026-11-17 | Lint: ESLint 10 + `@eslint-react` (em vez do `eslint-plugin-react`) e `simple-import-sort` (em vez do `import-x`). `typescript-eslint` fixado em 8.72.2 por causa do `minimumReleaseAge`.                                                                     |
 | 2026-11-16 | `shared` exporta o TS direto (sem build); a api usa tsx em dev e tsup em produção; TypeScript fixado em 6.0.x por compatibilidade com o typescript-eslint.                                                                                                    |
