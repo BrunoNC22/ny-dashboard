@@ -12,7 +12,8 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
   const me = useMe();
   const logout = useLogout();
 
-  if (me.isPending) return <div className="h-10 w-28" aria-hidden />;
+  if (me.isPending)
+    return <div className={compact ? "size-10" : "h-10 w-28"} aria-hidden />;
 
   if (!me.data) {
     return (

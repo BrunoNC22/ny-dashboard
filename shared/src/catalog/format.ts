@@ -79,3 +79,11 @@ export const formatDeltaPct = (value: number | null | undefined): string => {
 
 /** Text shown when a metric does not exist for the selected services. */
 export const NOT_APPLICABLE_LABEL = "Não se aplica";
+
+/** "2026-09-30" → "30/09/2026" (CLAUDE.md §2: dates shown as dd/MM/yyyy). */
+export const formatIsoDate = (iso: string): string => {
+  const [year, month, day] = iso.slice(0, 10).split("-");
+  return day
+    ? `${day}/${month ?? ""}/${year ?? ""}`
+    : `${month ?? ""}/${year ?? ""}`;
+};

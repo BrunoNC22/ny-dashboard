@@ -6,6 +6,7 @@ import {
   dimensionValueLabel,
   formatDeltaPct,
   formatDuration,
+  formatIsoDate,
   formatMetric,
   formatValue,
   getMetric,
@@ -159,5 +160,12 @@ describe("meta contract", () => {
         true,
       );
     }
+  });
+});
+
+describe("formatIsoDate", () => {
+  it("shows dates as dd/MM/yyyy and months as MM/yyyy", () => {
+    expect(formatIsoDate("2026-09-30")).toBe("30/09/2026");
+    expect(formatIsoDate("2024-10")).toBe("10/2024");
   });
 });

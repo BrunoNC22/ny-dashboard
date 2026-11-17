@@ -36,7 +36,7 @@ export function Card({
       {...props}
     >
       {hasHeader && (
-        <header
+        <div
           className={cn(
             "flex items-center gap-2 px-4 pt-3 pb-2",
             headerClassName,
@@ -55,7 +55,7 @@ export function Card({
           {actions !== undefined && (
             <div className="ml-auto flex items-center gap-1">{actions}</div>
           )}
-        </header>
+        </div>
       )}
       <div className="min-h-0 flex-1 px-4 pb-4">{children}</div>
     </section>

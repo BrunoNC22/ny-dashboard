@@ -306,6 +306,16 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - **Sem flash:** a última aparência aplicada fica em `nyd:appearance:v1` e um script inline no `index.html` a aplica antes da primeira pintura. Ela é separada de `nyd:preferences:v1` (preferências do visitante), que também sinaliza "há algo para importar" (#34). Um teste confere que o script aceita exatamente `THEMES`/`PALETTES` do `shared`.
   - `usePreferencesSync` (montado no `RootLayout`, vale para todas as páginas): logado usa `/api/preferences` (debounce de 300 ms, refetch no foco, sem sobrescrever mudança pendente); visitante usa o `localStorage`; ao sair, voltam as preferências do visitante.
   - Em desenvolvimento, `?theme=&palette=` trava a aparência (`lock`) para os screenshots.
+- **App shell (#37, `web/src/components/shell`):**
+  - Header de vidro fixo no topo:
+    - **desktop:** logo, indicador de salvamento, desfazer/refazer/voltar ao padrão (com confirmação), "Adicionar widget", tema, paleta e menu do usuário;
+    - **mobile (< `md`):** logo, "+" e um menu "Mais ações" com o resto (incluindo as paletas).
+  - Abaixo do header fica a linha dos filtros globais (#38).
+  - Rodapé com as atribuições (NYC TLC, OpenStreetMap, OpenFreeMap) e o período dos dados (`formatIsoDate` do `shared`, dd/MM/yyyy).
+  - Atalhos: Ctrl/⌘+Z desfaz; Ctrl/⌘+Shift+Z ou Ctrl+Y refaz. Não valem dentro de campos de texto nem com um modal aberto.
+  - "Adicionar widget" abre a galeria pelo `useUiStore` (a galeria é a #41).
+  - `Popover` (componente base) para os menus: fecha com Escape (devolve o foco) e com clique fora.
+  - Verificado em 360 px sem scroll horizontal. O Chromium headless não vai abaixo de 500 px, então a checagem foi feita num iframe.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
