@@ -34,6 +34,8 @@ RUN apt-get update \
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build --chown=node:node /out ./
+# Generated JWT secret lives here (a named volume in docker-compose.yml; see the entrypoint).
+RUN mkdir -p /app/secrets && chown node:node /app/secrets
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=5s --start-period=180s --retries=5 \

@@ -1,5 +1,8 @@
-# Local stack. For now only the database (api and web are added in #52).
-#   docker compose up -d db
+# Full stack (CLAUDE.md §11): `docker compose up` → http://localhost:8080 (WEB_PORT),
+# user demo / demo1234. The first start loads the data snapshot (~2 min).
+#
+# Development only needs the database: `docker compose up -d db` (see README).
+# Every variable is optional (environment or .env): see .env.example.
 services:
   db:
     image: postgres:18-alpine
@@ -8,6 +11,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ny}
       POSTGRES_DB: ${POSTGRES_DB:-ny_dashboard}
     ports:
+      # Published for local development (pnpm dev, prisma studio).
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       # Postgres 18+ images keep data under /var/lib/postgresql (not .../data).
@@ -17,6 +21,42 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ny}:${POSTGRES_PASSWORD:-ny}@db:5432/${POSTGRES_DB:-ny_dashboard}
+      # Empty or the .env.example placeholder: the api generates a random secret once and
+      # keeps it in the api-secrets volume.
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # --if-empty: load the snapshot only if it is not loaded yet; --force: always reload.
+      SEED_FLAGS: ${SEED_FLAGS:---if-empty}
+    volumes:
+      - api-secrets:/app/secrets
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    environment:
+      API_UPSTREAM: api:3000
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   db-data:
+  api-secrets:

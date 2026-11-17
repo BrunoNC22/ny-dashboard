@@ -457,7 +457,7 @@ Todos os payloads são validados com schemas zod de `shared`. Fluxo MVC: `routes
 - `docker-compose.yml` na raiz sobe **db** (Postgres, com healthcheck e volume), **api** e **web**.
 - **api:** imagem multi-stage. O entrypoint roda `prisma migrate deploy`, depois o **seed com `--if-empty`** (só popula se o banco estiver vazio, idempotente) e por fim sobe o servidor.
 - **web:** build estático servido por **nginx**, que repassa `/api` para a api e faz o fallback de SPA.
-- **Desenvolvimento local:** `docker compose up -d db` + `pnpm --filter @ny-dashboard/api db:migrate` + `pnpm dev` (api e web com hot reload, fora do Docker). Passo a passo no README.
+- **Desenvolvimento local:** `docker compose up -d db` + `pnpm --filter @ny-dashboard/api db:migrate` + `db:seed` + `pnpm dev` (api e web com hot reload, fora do Docker). Passo a passo no README.
 
 ## 12. Fluxo de trabalho
 
@@ -627,6 +627,11 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Rotas: `/api/` vai para a api (mesma origem; `proxy_read_timeout` de 120 s por causa das consultas de 1 milhão de pontos); `/assets/` com cache de 1 ano `immutable`; o resto cai no `index.html` (SPA) com `no-cache`, `nosniff` e `Referrer-Policy`. gzip para estáticos e respostas não comprimidas (a api já comprime o JSON).
   - **`.mjs` como JavaScript:** o `mime.types` do nginx não conhece `.mjs`, e o worker do MapLibre era servido como `application/octet-stream`; o navegador recusava ("Worker failed to load") e os mapas quebravam. Uma `location` própria resolve.
   - Verificado com api + web em containers: rotas da SPA, login e sessão por cookie, 1 milhão de pontos pelo proxy (5,2 MB com gzip em 3,7 s) e o dashboard padrão completo no navegador.
+- **docker compose (#52):**
+  - `docker compose up --build` sobe `db` (Postgres 18, healthcheck, volume `db-data`, porta publicada para o desenvolvimento), `api` (espera o `db` saudável; sem porta publicada, só acessível pelo nginx) e `web` (porta `WEB_PORT`, padrão 8080). Todas as variáveis são opcionais (README e `.env.example`).
+  - **Segredo JWT sem configuração:** se `JWT_SECRET` estiver vazio ou for o valor do `.env.example`, o entrypoint gera um segredo aleatório (48 bytes) uma vez e o guarda no volume `api-secrets` (`/app/secrets/jwt_secret`, 0600). A regra da #20 continua valendo: a api nunca roda em produção com um segredo conhecido, e as sessões sobrevivem a reinícios.
+  - Verificado como clone limpo (projeto separado, volumes novos, **sem `.env`**): seed em ~110 s, login do demo, sessão válida depois de reiniciar a api, sem regerar o segredo e sem recarregar o snapshot.
+  - Nesta máquina de desenvolvimento a 8080 está ocupada por outro projeto. Use `WEB_PORT` para trocar.
 - **Logs sem segredos (#50):** o `pino` oculta (`[redacted]`) `req.headers.cookie`, `req.headers.authorization` e `res.headers["set-cookie"]`. Antes, o log de requisições gravava o JWT da sessão. Um teste faz login e confere que o token não aparece no log.
 - **Web base (#29):**
   - Vite 8 + React 19 + Tailwind v4 (`@tailwindcss/vite`).
