@@ -403,6 +403,15 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - `BaseMap` ganhou **`ResizeObserver`** (o item do grid muda de tamanho sem resize da janela) e **gestos cooperativos** (Ctrl/⌘+roda para zoom, dois dedos no toque), para o mapa não capturar a rolagem da página.
   - A atribuição do MapLibre fica compacta (só o "i"; expande no hover/foco). As atribuições também estão no rodapé.
   - Camadas da amostra (calor, pontos, hexágonos) e arcos: #49.
+- **Mapa, parte 2 (#49, `web/src/widgets/map/sampleLayers.ts`):**
+  - **Amostra (até ~1 milhão de pontos, GPU):** a resposta colunar vira `Float32Array` (posições) + `Uint8Array` (categoria). As camadas leem por índice (`data: { length }`), sem criar 1 milhão de objetos. Avisos de posição aproximada e de período fora do mês da amostra.
+    - **Calor** (`HeatmapLayer`) na rampa sequencial.
+    - **Pontos** (`IconLayer`): **um ícone por categoria** (círculo, quadrado, triângulo, losango, desenhados num atlas em canvas com `mask: true`), coloridos pelo slot fixo da entidade. Legenda com forma, cor e contagem.
+    - **Hexágonos 3D** (`HexagonLayer`, `gpuAggregation`), com a câmera inclinada a 45°.
+    - Verificado no navegador com 1 milhão de pontos (calor, pontos por empresa e hexágonos).
+  - **Rotas (arcos):** as 150 mais frequentes (`/api/query/map` no modo `flows`), ligando os centróides das zonas. As rotas dentro da mesma zona ficam de fora (não viram arco). A espessura usa escala de raiz; o **glow** é um arco largo e translúcido por baixo; as cores vão do destaque ao destaque 2 da paleta. A câmera inclina 40° para a curva aparecer. Tooltip "A → B: valor" e legenda "origem → destino".
+  - A seleção de camadas fica no editor (#42).
+  - **Bundle:** a página `/_ds` agora é `lazy` dentro do ramo `import.meta.env.DEV`. Antes, o import estático dela levava o MapLibre para o bundle inicial (1,6 MB → **487 kB, 151 kB com gzip**). MapLibre + deck.gl ficam só no chunk do mapa (~547 kB com gzip), carregado sob demanda.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.

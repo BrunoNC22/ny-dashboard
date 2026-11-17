@@ -1,7 +1,6 @@
 import type { RouteObject } from "react-router";
 
 import { DashboardPage } from "./pages/DashboardPage";
-import { DesignSystemPage } from "./pages/DesignSystemPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -15,8 +14,17 @@ export const routes: RouteObject[] = [
       { path: "/", element: <DashboardPage /> },
       { path: "/login", element: <LoginPage /> },
       { path: "/cadastro", element: <RegisterPage /> },
+      // Lazy, inside a DEV-only branch: production drops it (and the MapLibre demo it pulls).
       ...(import.meta.env.DEV
-        ? [{ path: "/_ds", element: <DesignSystemPage /> }]
+        ? [
+            {
+              path: "/_ds",
+              lazy: async () => ({
+                Component: (await import("./pages/DesignSystemPage"))
+                  .DesignSystemPage,
+              }),
+            },
+          ]
         : []),
       { path: "*", element: <NotFoundPage /> },
     ],

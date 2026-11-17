@@ -44,3 +44,13 @@ export const zoneTooltip = (
 <div class="nyd-tip-value">${formatMetric(metric, value?.value ?? null)}</div>${deltaLine}`,
   };
 };
+
+/** Arc tooltip: "A → B" and the route value. */
+export const flowTooltip = (
+  flow: { fromName: string; toName: string; value: number },
+  metric: MetricId,
+) => ({
+  className: "nyd-map-tooltip",
+  html: `<div class="nyd-tip-title">${escape(flow.fromName)} → ${escape(flow.toName)}</div>
+<div class="nyd-tip-value">${formatMetric(metric, flow.value)}</div>`,
+});

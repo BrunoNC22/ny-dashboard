@@ -3,8 +3,18 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { ZoneFeature } from "../api/client";
-import { MapLegend } from "../widgets/map/MapLegend";
-import { zoneTooltip } from "../widgets/map/tooltip";
+import { MapLegend, PointsLegend } from "../widgets/map/MapLegend";
+import {
+  arcWidth,
+  positionAt,
+  toFlows,
+  toFlowsRequest,
+  toPointColumns,
+  toPointsRequest,
+  usesFlows,
+  usesSample,
+} from "../widgets/map/sampleLayers";
+import { flowTooltip, zoneTooltip } from "../widgets/map/tooltip";
 import {
   bubbleRadius,
   isComparing,
@@ -150,5 +160,117 @@ describe("map legend", () => {
     expect(
       screen.getByText(/área ∝ receita · maior: US\$ 6,4 mi/),
     ).toBeInTheDocument();
+  });
+});
+
+describe("sample layers and flows", () => {
+  it("turns the points columns into typed arrays with a shape per company", () => {
+    const columns = toPointColumns(
+      {
+        mode: "points",
+        categories: ["yellow", "uber", "lyft", "green"],
+        columns: {
+          lon: [-73.9, -73.8, -73.7, -73.95, -74],
+          lat: [40.7, 40.6, 40.65, 40.75, 40.8],
+          category: [0, 1, 1, 2, 3],
+        },
+      },
+      "company",
+    );
+    expect(columns.length).toBe(5);
+    expect(columns.positions).toBeInstanceOf(Float32Array);
+    expect(positionAt(columns, 1)).toEqual([
+      Math.fround(-73.8),
+      Math.fround(40.6),
+    ]);
+    expect(
+      columns.categories.map((c) => [c.label, c.slot, c.shape, c.count]),
+    ).toEqual([
+      ["Yellow", 2, "triangle", 1],
+      ["Uber", 0, "circle", 2],
+      ["Lyft", 1, "square", 1],
+      ["Green", 3, "diamond", 1],
+    ]);
+  });
+
+  it("keeps routes with both ends on the map and different zones", () => {
+    const zones = new Map([
+      [132, { centroid: [-73.78, 40.64] as [number, number], name: "JFK" }],
+      [161, { centroid: [-73.98, 40.76] as [number, number], name: "Midtown" }],
+    ]);
+    const flows = toFlows(
+      {
+        mode: "flows",
+        metric: "trips",
+        notApplicable: false,
+        columns: {
+          from: [132, 132, 76],
+          to: [161, 132, 161],
+          value: [900, 500, 300],
+        },
+      },
+      zones,
+    );
+    expect(flows).toEqual([
+      {
+        from: [-73.78, 40.64],
+        to: [-73.98, 40.76],
+        fromName: "JFK",
+        toName: "Midtown",
+        value: 900,
+      },
+    ]);
+    expect(arcWidth(900, 900)).toBe(8);
+    expect(arcWidth(1, 900)).toBe(1);
+  });
+
+  it("asks for the sample or the flows only when a layer needs them", () => {
+    expect(usesSample({ ...widget, layers: ["choropleth"] })).toBe(false);
+    expect(usesSample({ ...widget, layers: ["hexagon"] })).toBe(true);
+    expect(usesFlows({ ...widget, layers: ["arcs"] })).toBe(true);
+    expect(toPointsRequest(widget, filters)).not.toHaveProperty("comparison");
+    expect(toFlowsRequest(widget, filters)).toMatchObject({
+      mode: "flows",
+      limit: 150,
+    });
+  });
+
+  it("arc tooltip names both ends", () => {
+    const tip = flowTooltip(
+      { fromName: "JFK Airport", toName: "Midtown", value: 900 },
+      "trips",
+    );
+    expect(tip.html).toContain("JFK Airport → Midtown");
+    expect(tip.html).toContain("900");
+  });
+
+  it("points legend shows shape, name and count per category", () => {
+    render(
+      <PointsLegend
+        categories={[
+          {
+            key: "lyft",
+            label: "Lyft",
+            slot: 1,
+            shape: "square",
+            count: 207_600,
+          },
+          {
+            key: "uber",
+            label: "Uber",
+            slot: 0,
+            shape: "circle",
+            count: 572_100,
+          },
+        ]}
+        colors={[
+          [1, 2, 3, 255],
+          [4, 5, 6, 255],
+        ]}
+      />,
+    );
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("Uber572,1 mil");
+    expect(items[1]).toHaveTextContent("Lyft207,6 mil");
   });
 });
