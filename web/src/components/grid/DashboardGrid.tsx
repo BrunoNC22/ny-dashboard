@@ -2,7 +2,7 @@ import "react-grid-layout/css/styles.css";
 import "./grid.css";
 
 import type { Breakpoint, WidgetConfig } from "@ny-dashboard/shared";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useReducer } from "react";
 import { type Layout, Responsive, useContainerWidth } from "react-grid-layout";
 
 import { useDashboardStore } from "../../stores/dashboardStore";
@@ -49,6 +49,12 @@ export function DashboardGrid({
   const breakpoint = breakpointForWidth(width);
   const layouts = useMemo(() => toGridLayouts(state), [state]);
 
+  // react-grid-layout 2.3 keeps the live drag/resize position in a ref and memoizes GridItem
+  // on x/y/w/h + children: with stable children the item only moved when the placeholder
+  // changed cell. A tick per drag/resize event re-creates the children (cheap wrappers; the
+  // memoized WidgetRenderer inside does not re-render), so the item follows the pointer.
+  const [, followPointer] = useReducer((n: number) => n + 1, 0);
+
   const commit = (layout: Layout) => {
     updateLayout(breakpoint, fromGridLayout(layout));
   };
@@ -72,6 +78,8 @@ export function DashboardGrid({
             cancel: "button, a, input, select, textarea, [data-no-drag]",
           }}
           resizeConfig={{ enabled: true, handles: ["se"] }}
+          onDrag={followPointer}
+          onResize={followPointer}
           onDragStop={commit}
           onResizeStop={commit}
         >

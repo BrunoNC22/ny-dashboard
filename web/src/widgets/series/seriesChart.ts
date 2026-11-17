@@ -13,6 +13,7 @@ import {
   type ChartTheme,
   comparisonStyle,
   largeDataOptions,
+  progressiveLineAnimation,
   projectionStyle,
   seriesColor,
   stackedBarStyle,
@@ -147,6 +148,10 @@ export const seriesChartConfig = (
     responsive: true,
     maintainAspectRatio: false,
     ...large,
+    // Lines and areas are drawn left → right (big series keep animation off: `large`).
+    ...(!bars && !("animation" in large)
+      ? { animations: progressiveLineAnimation(points) }
+      : {}),
     interaction: { mode: "index", intersect: false },
     scales: {
       x: {

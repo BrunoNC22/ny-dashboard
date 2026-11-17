@@ -1,5 +1,5 @@
 import type { Breakpoint, WidgetConfig } from "@ny-dashboard/shared";
-import { Suspense, useMemo } from "react";
+import { memo, Suspense, useMemo } from "react";
 
 import { useDashboardStore } from "../stores/dashboardStore";
 import { widgetDefinition } from "./registry";
@@ -15,8 +15,12 @@ export interface WidgetRendererProps {
   preview?: boolean;
 }
 
-/** Frame + the type's component with the effective filters, error boundary and lazy loading. */
-export function WidgetRenderer({
+/**
+ * Frame + the type's component with the effective filters, error boundary and lazy loading.
+ * Memoized: the grid re-creates its children on every drag/resize event (see DashboardGrid);
+ * widgets only re-render when their own props change.
+ */
+export const WidgetRenderer = memo(function WidgetRenderer({
   widget,
   breakpoint,
   preview = false,
@@ -48,4 +52,4 @@ export function WidgetRenderer({
       </WidgetErrorBoundary>
     </WidgetFrame>
   );
-}
+});

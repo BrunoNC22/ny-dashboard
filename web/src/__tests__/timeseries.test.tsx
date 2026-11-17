@@ -266,6 +266,30 @@ describe("chart config", () => {
     expect(small.options.plugins).not.toHaveProperty("decimation");
   });
 
+  it("lines and areas reveal left to right; bars and big series do not", () => {
+    const datasets = buildDatasets(response(), {
+      widget: line,
+      periodFrom: "2026-09-01",
+      comparisonMode: "previous_period",
+      comparisonLabel: "08/2026",
+    });
+    const area = seriesChartConfig(datasets, { ...base, type: "area" });
+    const x = (
+      area.options.animations as Record<
+        string,
+        { delay: unknown; from: unknown }
+      >
+    ).x;
+    if (!x) throw new Error("no x animation");
+    expect(Number.isNaN(x.from)).toBe(true);
+    const delay = x.delay as (ctx: object) => number;
+    // each point waits for the ones before it (3 points over 900 ms)
+    expect(delay({ type: "data", index: 2, datasetIndex: 0 })).toBe(600);
+    expect(
+      seriesChartConfig(datasets, { ...base, type: "bar" }).options,
+    ).not.toHaveProperty("animations");
+  });
+
   it("stacks bars on both axes", () => {
     const { type, options } = seriesChartConfig([], {
       ...base,

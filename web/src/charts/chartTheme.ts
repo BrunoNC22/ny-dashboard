@@ -409,3 +409,57 @@ export const sparklineDataset = (theme: ChartTheme) => {
     spanGaps: true,
   };
 };
+
+/** Total time of the progressive line reveal. */
+export const PROGRESSIVE_DURATION_MS = 900;
+
+/**
+ * Progressive reveal for line/area charts: points enter one after another from the start of the
+ * x axis to the end, so the line is drawn left → right instead of rising from the bottom
+ * (Chart.js "progressive line"). Each point starts at the previous point's height and slides in;
+ * later updates (filters) animate normally.
+ */
+export const progressiveLineAnimation = (
+  points: number,
+  totalMs = PROGRESSIVE_DURATION_MS,
+): ChartOptions<"line">["animations"] => {
+  const step = totalMs / Math.max(points, 1);
+  interface Ctx {
+    type: string;
+    index: number;
+    datasetIndex: number;
+    chart: Chart;
+    xStarted?: boolean;
+    yStarted?: boolean;
+  }
+  const previousY = (ctx: Ctx) => {
+    const elements = ctx.chart.getDatasetMeta(ctx.datasetIndex).data;
+    const previous = elements[Math.max(ctx.index - 1, 0)];
+    return (previous?.getProps(["y"], true) as { y?: number } | undefined)?.y;
+  };
+  // Chart.js types the scriptable contexts loosely; the callbacks read only what Ctx declares.
+  return {
+    x: {
+      type: "number" as const,
+      easing: "linear" as const,
+      duration: step,
+      from: NaN,
+      delay: (ctx: Ctx) => {
+        if (ctx.type !== "data" || ctx.xStarted) return 0;
+        ctx.xStarted = true;
+        return ctx.index * step;
+      },
+    },
+    y: {
+      type: "number" as const,
+      easing: "linear" as const,
+      duration: step,
+      from: previousY,
+      delay: (ctx: Ctx) => {
+        if (ctx.type !== "data" || ctx.yStarted) return 0;
+        ctx.yStarted = true;
+        return ctx.index * step;
+      },
+    },
+  } as unknown as ChartOptions<"line">["animations"];
+};
