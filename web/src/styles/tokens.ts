@@ -251,12 +251,32 @@ export const SEQUENTIAL = [
   "#0d366b",
 ] as const;
 
-/** Diverging pair (blue ↔ red) with a neutral gray midpoint per theme. */
+/**
+ * Diverging scale for comparisons on the map: red ↔ green (owner's decision 45A, kept after
+ * weighing the CVD trade-off) with a neutral gray midpoint. It is direction-aware: green =
+ * improvement, red = worsening for the metric, and the value is always shown as ±% text
+ * (legend "piora / melhora" + tooltip), so color is never the only channel.
+ */
 export const DIVERGING = {
-  negative: "#e34948",
-  positive: "#2a78d6",
+  worse: "#d03b3b",
+  better: "#0ca30c",
   neutral: { light: "#f0efec", dark: "#383835" },
 } as const;
+
+/**
+ * Point shapes paired with the series colors in scatter/bubble charts: more than 3 color
+ * categories are allowed there only with shape as a second channel (owner's decision).
+ */
+export const POINT_STYLES = [
+  "circle",
+  "rect",
+  "triangle",
+  "rectRot",
+  "star",
+  "crossRot",
+  "rectRounded",
+  "line",
+] as const;
 
 // ── CSS variables ──────────────────────────────────────────────────────────────
 

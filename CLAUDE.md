@@ -248,6 +248,9 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
     - Mono: a ordem de referência, com interface em cinzas.
   - No tema claro, 3 matizes ficam abaixo de 3:1 sobre o branco. A regra de alívio vale: rótulos/tooltips ou a visualização em tabela.
   - **Status** (bom/atenção/ruim), **sequencial** (azul 100→700) e **divergente** são fixos e não mudam com a paleta. O status aparece sempre com ícone + texto.
+- **Exceções às recomendações de dataviz, decididas pelo dono do projeto (17/11/2026):**
+  - **Escala divergente vermelho ↔ verde** no mapa (a decisão 45A foi mantida mesmo com o alerta de daltonismo). Para mitigar, ela é **sensível à direção da métrica** (verde = melhorou, vermelho = piorou), o meio é cinza e o valor aparece sempre como texto ±% (legenda "piora / melhora" + tooltip).
+  - **Scatter, bubble e pontos no mapa podem ter 4 cores** (colorBy empresa: Uber, Lyft, Yellow, Green), mas **com forma como segundo canal** (`POINT_STYLES`: círculo, quadrado, triângulo, losango…). No mapa (deck.gl), a forma vira um ícone por categoria.
 - **Pipeline dos tokens:**
   - `web/src/styles/tokens.ts` é a fonte única.
   - `pnpm --filter @ny-dashboard/web tokens` gera `tokens.generated.css`, com variáveis `--nyd-*` por `[data-theme][data-palette]` no `<html>`. Um teste falha se o arquivo estiver desatualizado.
