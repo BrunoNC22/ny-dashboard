@@ -29,4 +29,7 @@ export const monthRange = (from: Month, to: Month): Month[] => {
   );
 };
 
-export const nextMonth = (month: Month): Month => fromIndex(toIndex(month) + 1);
+export const addMonths = (month: Month, count: number): Month =>
+  fromIndex(toIndex(month) + count);
+
+export const nextMonth = (month: Month): Month => addMonths(month, 1);

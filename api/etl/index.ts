@@ -29,18 +29,18 @@ import { ensureStore, ETL_DB_PATH, saveSourceReport } from "./lib/store";
 import { dailyZoneStep } from "./steps/dailyZone";
 import { hourlyStep } from "./steps/hourly";
 import { odMonthlyStep } from "./steps/odMonthly";
-import { tripSampleStep } from "./steps/tripSample";
+import { createTripSampleStep } from "./steps/tripSample";
 
 /** Snapshot period (CLAUDE.md §5.2). */
 const DEFAULT_FROM: Month = "2024-10";
 const DEFAULT_TO: Month = "2026-09";
 
-/** Aggregation steps (#8–#11). */
-const STEPS: EtlStep[] = [
+/** Aggregation steps (#8–#11). The trip sample uses the last month of the run. */
+const createSteps = (sampleMonth: Month): EtlStep[] => [
   dailyZoneStep,
   hourlyStep,
   odMonthlyStep,
-  tripSampleStep,
+  createTripSampleStep({ month: sampleMonth }),
 ];
 
 const parseServices = (value: string): Service[] =>
@@ -62,6 +62,7 @@ const main = async (): Promise<void> => {
     `etl        ${months[0] ?? ""} → ${months.at(-1) ?? ""}, services: ${services.join(", ")}`,
   );
 
+  const steps = createSteps(months.at(-1) ?? DEFAULT_TO);
   const duck = await Duck.open(ETL_DB_PATH);
   await ensureStore(duck);
   const reports: SourceReport[] = [];
@@ -71,14 +72,14 @@ const main = async (): Promise<void> => {
         const path = await downloadToCache(tripDataUrl(service, month), {
           refresh: values.refresh,
         });
-        const report = await processSource(duck, service, month, path, STEPS);
+        const report = await processSource(duck, service, month, path, steps);
         reports.push(report);
         await saveSourceReport(duck, report);
         console.log(formatReport(report));
         if (!values["keep-cache"]) await removeFromCache(path);
       }
     }
-    for (const step of STEPS) await step.finalize?.(duck);
+    for (const step of steps) await step.finalize?.(duck);
   } finally {
     duck.close();
   }

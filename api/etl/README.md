@@ -144,3 +144,35 @@ As configurações ficam em `SAMPLE`, em `etl/lib/sources.ts`.
 Colunas: `sample_id` (1..N), `service`, `company`, `pickup_at`, `pu_zone_id`, `do_zone_id`, `distance_mi`, `duration_s`, `fare`, `tips`, `revenue`, `wait_s`, `lon` e `lat`.
 
 A reprodutibilidade depende da versão do DuckDB (a função `hash`), que está fixada no `package.json`.
+
+## Snapshot (`etl:snapshot`)
+
+```sh
+pnpm --filter @ny-dashboard/api etl:snapshot [--from YYYY-MM] [--to YYYY-MM]
+```
+
+Exporta o armazenamento (`etl.duckdb`) para `api/data/snapshot/`, o diretório **versionado no git** que o seed carrega offline. Por padrão, o período são os **24 meses mais recentes** do armazenamento. O comando falha se faltar algum mês do período.
+
+- Cada tabela (`agg_daily_zone`, `agg_hourly`, `agg_od_monthly`, `trip_sample`) vira CSV com cabeçalho e gzip, no formato `{tabela}.{000}.csv.gz`.
+- Se um arquivo passar de **45 MB**, a tabela é dividida em chunks de ~35 MB (o limite do GitHub é 100 MB por arquivo).
+- As linhas saem em ordem determinística, e os valores são arredondados (dinheiro e milhas com 2 casas, segundos inteiros, lon/lat com 5 casas). Assim, os mesmos dados geram os mesmos arquivos (mesmo `sha256`).
+- O `manifest.json` traz:
+  - `formatVersion`, `generatedAt`, `period` e `sampleMonth`;
+  - as contagens por mês × serviço (`sources`);
+  - por tabela: colunas e tipos, número de linhas e os arquivos com `bytes` e `sha256`;
+  - `totalBytes`.
+
+## Atualização mensal (manual)
+
+A TLC publica cada mês com ~2 meses de atraso. Para incluir um mês novo (por exemplo, out/2026):
+
+```sh
+cd api
+pnpm etl --from 2026-10 --to 2026-10   # baixa e processa só o mês novo; a amostra passa a ser deste mês
+pnpm etl:snapshot                      # exporta os 24 meses mais recentes (nov/2024 → out/2026)
+git add data/snapshot && git commit -m "data: add 2026-10 trip records"
+```
+
+Isso depende do `etl.duckdb` local, que já tem os meses anteriores. Num clone novo, sem esse arquivo, rode o período completo: `pnpm etl --from 2024-11 --to 2026-10`, e depois `pnpm etl:snapshot`.
+
+Depois, atualize o CLAUDE.md (período dos dados) e, se precisar, os textos da interface que citam o período.

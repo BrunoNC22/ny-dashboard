@@ -17,6 +17,7 @@ import { computeQuotas } from "../lib/sample";
 import { SAMPLE } from "../lib/sources";
 
 export interface SampleOptions {
+  /** Month whose trips are sampled (the ETL passes the last month of the run). */
   month: string;
   size: number;
   floorPerService: number;

@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "etl:zones": "tsx etl/zones.ts",
-    "etl": "tsx etl/index.ts"
+    "etl": "tsx etl/index.ts",
+    "etl:snapshot": "tsx etl/snapshot.ts"
   },
   "dependencies": {
     "@ny-dashboard/shared": "workspace:*"

@@ -10,3 +10,4 @@ export const CACHE_DIR = join(API_DIR, "etl", ".cache");
 /** Versioned outputs consumed by the seed. */
 export const DATA_DIR = join(API_DIR, "data");
 export const ZONES_DIR = join(DATA_DIR, "zones");
+export const SNAPSHOT_DIR = join(DATA_DIR, "snapshot");
