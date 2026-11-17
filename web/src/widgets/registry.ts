@@ -21,6 +21,7 @@ import {
   type ReactElement,
 } from "react";
 
+import { CategoricalWidget } from "./categorical/CategoricalWidget";
 import { PlaceholderWidget } from "./PlaceholderWidget";
 import { TimeSeriesWidget } from "./series/TimeSeriesWidget";
 import type { GridSize, WidgetDefinition, WidgetProps } from "./types";
@@ -110,7 +111,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: Donut,
     group: "composition",
     sizes: CATEGORICAL,
-    component: placeholder(),
+    component: CategoricalWidget,
   },
   pie: {
     type: "pie",
@@ -118,7 +119,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: ChartPie,
     group: "composition",
     sizes: CATEGORICAL,
-    component: placeholder(),
+    component: CategoricalWidget,
   },
   polar_area: {
     type: "polar_area",
@@ -126,7 +127,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: Radar,
     group: "composition",
     sizes: CATEGORICAL,
-    component: placeholder(),
+    component: CategoricalWidget,
   },
   bar_horizontal: {
     type: "bar_horizontal",
@@ -134,7 +135,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: ChartBar,
     group: "composition",
     sizes: CATEGORICAL,
-    component: placeholder(),
+    component: CategoricalWidget,
   },
   radar: {
     type: "radar",
@@ -142,7 +143,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: ChartRadar,
     group: "distribution",
     sizes: CATEGORICAL,
-    component: placeholder(),
+    component: CategoricalWidget,
   },
   scatter: {
     type: "scatter",
