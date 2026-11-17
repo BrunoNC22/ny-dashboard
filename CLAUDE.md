@@ -286,6 +286,15 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
 - O drag acontece pelo cabeçalho do widget (para não brigar com a rolagem no toque); o resize é pelo canto.
 - Não existe widget de "heatmap hora × dia da semana" no Chart.js, porque não estava na lista aprovada. Cortes por hora e dia usam radar ou barras.
 - A label extra `data` foi criada para as issues de ETL, snapshot e projeção.
+- **Contratos em `shared` (#3):**
+  - Filtros de serviço, empresa e distrito aceitam vários valores; uma lista vazia significa "todos". IDs em minúsculas: empresas `yellow`, `green`, `uber`, `lyft`, `other`; distritos `manhattan`, `brooklyn`, `queens`, `bronx`, `staten_island`, `ewr`, `unknown`.
+  - O estado do dashboard (`DashboardState`, `version: 1`) guarda também os filtros globais. Tem no máximo 50 widgets, e cada widget aparece exatamente uma vez em cada layout, dentro das colunas daquele breakpoint.
+  - Novo tipo de widget `bar_horizontal` (ranking por categoria). `bar` e `stacked_bar` são séries temporais, e `stacked_bar` exige `groupBy`.
+  - Avaliação de KPI: em `comparison`, uma variação menor que `neutralBandPct` vira "atenção". Em `target`, atingir a meta é "bom" e ficar até `warningBandPct` abaixo dela é "atenção".
+  - As respostas de séries, mapa e amostra usam formato **colunar** (`{ t: [...], v: [...] }`), para reduzir o tamanho do payload.
+  - Os timestamps das respostas são **horário de parede de NY sem offset**: `YYYY-MM-DD` ou `YYYY-MM-DDTHH:mm`.
+  - Projeção (sobreposta ou como comparação) só para granularidade diária ou maior.
+  - Usuário: 3 a 32 caracteres `[a-z0-9._-]`, convertido para minúsculas. Senha: de 8 caracteres a 72 bytes (o bcrypt ignora o que passa disso).
 
 ## 14. Roteiro
 
@@ -306,6 +315,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | Contratos zod do `shared` (#3), com as decisões derivadas listadas na §13.                                                                                                                                                                                    |
 | 2026-11-17 | Lint: ESLint 10 + `@eslint-react` (em vez do `eslint-plugin-react`) e `simple-import-sort` (em vez do `import-x`). `typescript-eslint` fixado em 8.72.2 por causa do `minimumReleaseAge`.                                                                     |
 | 2026-11-16 | `shared` exporta o TS direto (sem build); a api usa tsx em dev e tsup em produção; TypeScript fixado em 6.0.x por compatibilidade com o typescript-eslint.                                                                                                    |
 | 2026-11-16 | Definição inicial completa (seções 1 a 12), feita com o dono do projeto antes de escrever qualquer código. Fonte de dados escolhida: NYC TLC (as alternativas avaliadas foram Olist, UCI Online Retail II, Contoso, BCB/Focus, ONS, OWID e dados sintéticos). |
