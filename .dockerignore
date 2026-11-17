@@ -1,0 +1,14 @@
+# Build context is the repository root (shared + lockfile). Keep it small.
+**/node_modules
+**/dist
+**/coverage
+.git
+.github
+.env
+.env.*
+!.env.example
+*.log
+api/etl/.cache
+api/src/generated
+web/playwright-report
+web/test-results

@@ -8,6 +8,7 @@
     "etl",
     "vitest.config.ts",
     "vitest.integration.config.ts",
-    "prisma.config.ts"
+    "prisma.config.ts",
+    "tsup.config.ts"
   ]
 }
