@@ -37,8 +37,8 @@ Fluxo esperado de quem clona o repo: `docker compose up` → abre o navegador �
 | Camada | Tecnologia |
 |---|---|
 | Runtime | Node 24 LTS |
-| Gerenciador | pnpm (workspaces; versão fixada em `packageManager` no `package.json` raiz) |
-| Linguagem | TypeScript (front, back e shared) |
+| Gerenciador | pnpm 12 (workspaces; versão fixada em `packageManager` no `package.json` raiz). Os pacotes que podem rodar scripts de instalação ficam em `allowBuilds` no `pnpm-workspace.yaml` (aprovar com `pnpm approve-builds <pkg>`) |
+| Linguagem | TypeScript **6.0.x** (front, back e shared). **Não usar o TS 7**: o `typescript-eslint` só aceita versões abaixo da 6.1 |
 | Front | React 19, Vite, Tailwind CSS v4, React Router, Zustand (estado), TanStack Query (dados do servidor), zod, lucide-react (ícones), fonte Inter |
 | Gráficos | chart.js 4 + react-chartjs-2 + adapter de datas (date-fns) |
 | Grid | react-grid-layout (`Responsive`) |
@@ -91,7 +91,10 @@ Fluxo esperado de quem clona o repo: `docker compose up` → abre o navegador �
 ```
 
 - Os Dockerfiles ficam em `api/` e `web/`, mas o **contexto de build é a raiz** (para incluir `shared/` e o lockfile).
-- `shared` é consumido como pacote de workspace pelos dois apps.
+- `shared` é consumido como pacote de workspace (`@ny-dashboard/shared`, `workspace:*`) pelos dois apps. Ele **não tem etapa de build**: o `exports` aponta direto para `./src/index.ts`.
+  - **web:** o Vite compila o TS do shared.
+  - **api:** em dev roda com `tsx watch`. Para produção, é empacotada com **tsup**, que já inclui o shared no bundle, e roda com `node dist/server.js`.
+  - Os `tsconfig` de todos os pacotes estendem o `tsconfig.base.json` (strict, `module: preserve`, `moduleResolution: bundler`, `noEmit`). Como o TS 6 usa `types: []` por padrão, cada pacote declara os tipos que usa (por exemplo, `types: ["node"]` na api).
 
 ## 5. Dados — NYC TLC Trip Records
 
@@ -301,4 +304,5 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 
 | Data | Decisão |
 |---|---|
+| 2026-11-16 | `shared` exporta o TS direto (sem build); a api usa tsx em dev e tsup em produção; TypeScript fixado em 6.0.x por compatibilidade com o typescript-eslint. |
 | 2026-11-16 | Definição inicial completa (seções 1 a 12), feita com o dono do projeto antes de escrever qualquer código. Fonte de dados escolhida: NYC TLC (as alternativas avaliadas foram Olist, UCI Online Retail II, Contoso, BCB/Focus, ONS, OWID e dados sintéticos). |
