@@ -14,18 +14,13 @@ import {
   Radar,
   Table,
 } from "lucide-react";
-import {
-  type ComponentType,
-  createElement,
-  lazy,
-  type ReactElement,
-} from "react";
+import { createElement, lazy, type ReactElement } from "react";
 
 import { CategoricalWidget } from "./categorical/CategoricalWidget";
 import { KpiWidget } from "./kpi/KpiWidget";
-import { PlaceholderWidget } from "./PlaceholderWidget";
 import { TimeSeriesWidget } from "./series/TimeSeriesWidget";
-import type { GridSize, WidgetDefinition, WidgetProps } from "./types";
+import { TableWidget } from "./table/TableWidget";
+import type { GridSize, WidgetDefinition } from "./types";
 
 type Sizes = Readonly<Record<Breakpoint, GridSize>>;
 
@@ -58,10 +53,6 @@ const BubbleWidget = lazy(() =>
     default: m.BubbleWidget,
   })),
 );
-
-/** Until each type gets its own component (#43–#49). */
-const placeholder = <T extends WidgetType>() =>
-  PlaceholderWidget as unknown as ComponentType<WidgetProps<T>>;
 
 type Registry = { readonly [T in WidgetType]: WidgetDefinition<T> };
 
@@ -168,7 +159,7 @@ export const WIDGET_REGISTRY: Registry = {
     icon: Table,
     group: "table",
     sizes: size([6, 9, 4, 5], [2, 9, 2, 5]),
-    component: placeholder(),
+    component: TableWidget,
   },
   map: {
     type: "map",

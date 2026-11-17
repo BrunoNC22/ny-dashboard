@@ -11,6 +11,7 @@ import type {
 import {
   keepPreviousData,
   useMutation,
+  useQueries,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -184,6 +185,21 @@ export const useBreakdown = (
     queryFn: ({ signal }) => api.breakdown(request, signal),
     enabled,
     placeholderData: keepPreviousData,
+  });
+
+/** Several breakdowns in parallel (one per table column), each cached on its own. */
+export const useBreakdowns = (
+  requests: readonly BreakdownRequest[],
+  { enabled = true }: QueryToggle = {},
+) =>
+  useQueries({
+    queries: requests.map((request) => ({
+      queryKey: queryKeys.breakdown(request),
+      queryFn: ({ signal }: { signal: AbortSignal }) =>
+        api.breakdown(request, signal),
+      enabled,
+      placeholderData: keepPreviousData,
+    })),
   });
 
 export const useMapQuery = (
