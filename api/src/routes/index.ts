@@ -10,6 +10,10 @@ import {
 } from "../controllers/dashboardController";
 import { getHealth } from "../controllers/healthController";
 import { createMetaController } from "../controllers/metaController";
+import {
+  createQueryController,
+  querySchemas,
+} from "../controllers/queryController";
 import type { TokenService } from "../lib/tokens";
 import { createAuthMiddlewares } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
@@ -18,6 +22,7 @@ import type {
   PreferencesRepository,
 } from "../models/dashboardRepository";
 import type { DataRepository } from "../models/dataRepository";
+import type { QueryRepository } from "../models/queryRepository";
 import type { UserRepository } from "../models/userRepository";
 import { createAuthService } from "../services/authService";
 import {
@@ -25,6 +30,7 @@ import {
   createPreferencesService,
 } from "../services/dashboardService";
 import { createMetaService } from "../services/metaService";
+import { createTimeseriesService } from "../services/timeseriesService";
 import { createAuthRouter } from "./auth";
 
 /** Everything the routes need (real implementations in server.ts, fakes in unit tests). */
@@ -36,6 +42,7 @@ export interface ApiDependencies {
     dashboards: DashboardRepository;
     preferences: PreferencesRepository;
     data: DataRepository;
+    queries: QueryRepository;
   };
   /** Path of taxi_zones.geojson served by /api/zones. */
   zonesGeoJsonPath: string;
@@ -47,7 +54,7 @@ export interface ApiDependencies {
 export const createApiRouter = (deps: ApiDependencies): Router => {
   const router = Router();
   const auth = createAuthMiddlewares(deps.tokens);
-  const { users, dashboards, preferences, data } = deps.repositories;
+  const { users, dashboards, preferences, data, queries } = deps.repositories;
 
   const authController = createAuthController(
     createAuthService(users, deps.tokens),
@@ -65,6 +72,15 @@ export const createApiRouter = (deps: ApiDependencies): Router => {
   router.get("/health", getHealth);
   router.get("/meta", metaController.getMeta);
   router.get("/zones", metaController.getZones);
+
+  const queryController = createQueryController(
+    createTimeseriesService(queries),
+  );
+  router.post(
+    "/query/timeseries",
+    validate(querySchemas.timeseries),
+    queryController.timeseries,
+  );
   router.use("/auth", createAuthRouter(authController, auth));
 
   router.get("/dashboard", auth.requireAuth, dashboardController.getDashboard);

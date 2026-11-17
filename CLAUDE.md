@@ -380,6 +380,17 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - `GET /api/meta` e `GET /api/zones` são **públicos**, porque visitantes sem conta também usam o dashboard.
   - O `/api/meta` lê a cobertura real do banco (período, início do backtest, fim da projeção, mês da amostra, pares serviço/empresa presentes) e devolve também os rótulos, as 265 zonas e o catálogo de métricas. Ele é calculado uma vez e fica em memória (os dados só mudam com o seed). Antes do seed, responde 503 `NO_DATA`.
   - O `/api/zones` serve o GeoJSON (~500 KB) com `ETag` (sha1) e `Cache-Control: max-age=86400, must-revalidate`, e responde 304 quando o `If-None-Match` bate. A compressão gzip fica com o nginx em produção.
+- **Série temporal (#23, `POST /api/query/timeseries`, pública):**
+  - Dia, semana (ISO, a partir da segunda) e mês saem de `trip_daily`. Hora sai de `trip_hourly`, que **não tem zona**: filtro ou agrupamento por distrito/zona com granularidade horária → 400.
+  - A métrica só é calculada sobre os serviços onde existe. Se nenhum serviço selecionado tiver a métrica, `notApplicable: true`.
+  - **Linha do tempo completa:** um bucket sem dados em nenhum grupo vale `null` (fora da cobertura). Se faltar só para um grupo, vale 0 nas somas e `null` nas razões.
+  - **Período anterior:** meses inteiros comparam com os meses inteiros anteriores (set → ago, de 1 a 31); outros intervalos usam o mesmo número de dias imediatamente antes.
+  - **Ano anterior:** mesmas datas, 12 meses antes.
+  - Os pontos da comparação mantêm os timestamps originais, e o front alinha pelo deslocamento. `totals` traz o atual, o comparado e a variação %.
+  - **Projeção** (sobreposta ou como comparação): vem da tabela `projection`, que existe só por serviço × distrito. Com filtro de empresa ou zona, não vem projeção e é incluído um aviso em `notices`. Com `groupBy: company`, a projeção vem no total, também com aviso.
+  - A resposta inclui `unit` e `notices`.
+  - O SQL é montado com identificadores de whitelist e valores parametrizados (`models/queryRepository.ts`). Nos testes de unidade, `__tests__/memoryQueries.ts` replica a semântica em memória.
+  - Desempenho no banco local: mês × mês anterior com projeção em ~0,16 s; 24 meses por hora para 4 empresas (70 mil pontos, 2 MB) em ~0,5 s.
 
 ## 14. Roteiro
 

@@ -1,11 +1,10 @@
 import { BASE_COLUMNS } from "@ny-dashboard/shared";
 import { describe, expect, it } from "vitest";
 
+import { addDays, dateRange } from "../lib/periods";
 import {
-  addDays,
   buildProjections,
   type DailySeries,
-  dateRange,
   PROJECTED_COLUMNS,
 } from "../seed/projections";
 

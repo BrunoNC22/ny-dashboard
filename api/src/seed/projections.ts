@@ -11,6 +11,7 @@ import type { PoolClient } from "pg";
 import { from as copyFrom } from "pg-copy-streams";
 
 import { projectSeries } from "../lib/holtWinters";
+import { addDays, dateRange } from "../lib/periods";
 
 /** Base columns that exist for each service (others stay NULL in `projection`). */
 export const PROJECTED_COLUMNS: Readonly<
@@ -44,21 +45,6 @@ export interface ProjectionRow {
   kind: ProjectionKind;
   values: Partial<Record<BaseColumn, number>>;
 }
-
-const DAY_MS = 86_400_000;
-
-/** Adds days to a YYYY-MM-DD date (UTC arithmetic, no time zone issues). */
-export const addDays = (date: string, days: number): string =>
-  new Date(Date.parse(`${date}T00:00:00Z`) + days * DAY_MS)
-    .toISOString()
-    .slice(0, 10);
-
-/** Inclusive list of dates. */
-export const dateRange = (from: string, to: string): string[] => {
-  const out: string[] = [];
-  for (let date = from; date <= to; date = addDays(date, 1)) out.push(date);
-  return out;
-};
 
 /**
  * Projections for one series (CLAUDE.md §5.8):

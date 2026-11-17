@@ -23,6 +23,7 @@ import type {
   ZoneRow,
 } from "../models/dataRepository";
 import type { UserRecord, UserRepository } from "../models/userRepository";
+import { createMemoryQueryRepository } from "./memoryQueries";
 
 /** Logger that discards everything (keeps test output clean). */
 export const silentLogger = pino({ level: "silent" });
@@ -111,6 +112,7 @@ export const createMemoryRepositories = () => {
       dashboards: dashboardRepository,
       preferences: preferencesRepository,
       data: dataRepository,
+      queries: createMemoryQueryRepository(),
     },
   };
 };

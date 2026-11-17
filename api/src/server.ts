@@ -11,6 +11,7 @@ import {
   createPrismaPreferencesRepository,
 } from "./models/dashboardRepository";
 import { createPrismaDataRepository } from "./models/dataRepository";
+import { createPrismaQueryRepository } from "./models/queryRepository";
 import { createPrismaUserRepository } from "./models/userRepository";
 
 const env = loadEnv();
@@ -29,6 +30,7 @@ const app = createApp({
     dashboards: createPrismaDashboardRepository(prisma),
     preferences: createPrismaPreferencesRepository(prisma),
     data: createPrismaDataRepository(prisma),
+    queries: createPrismaQueryRepository(prisma),
   },
   zonesGeoJsonPath: join(ZONES_DIR, "taxi_zones.geojson"),
   onInvalidDashboard: (userId) => {
