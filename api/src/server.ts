@@ -3,6 +3,10 @@ import { durationToMs, loadEnv } from "./config/env";
 import { createLogger } from "./lib/logger";
 import { createPrisma } from "./lib/prisma";
 import { createTokenService } from "./lib/tokens";
+import {
+  createPrismaDashboardRepository,
+  createPrismaPreferencesRepository,
+} from "./models/dashboardRepository";
 import { createPrismaUserRepository } from "./models/userRepository";
 
 const env = loadEnv();
@@ -18,6 +22,14 @@ const app = createApp({
   },
   repositories: {
     users: createPrismaUserRepository(prisma),
+    dashboards: createPrismaDashboardRepository(prisma),
+    preferences: createPrismaPreferencesRepository(prisma),
+  },
+  onInvalidDashboard: (userId) => {
+    logger.warn(
+      { userId },
+      "stored dashboard is invalid; serving the default dashboard",
+    );
   },
 });
 

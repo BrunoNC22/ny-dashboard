@@ -97,3 +97,19 @@ export const dashboardStateSchema = z
     }
   });
 export type DashboardState = z.infer<typeof dashboardStateSchema>;
+
+// ── API contracts (/api/dashboard) ─────────────────────────────────────────────
+
+/** Body of `PUT /api/dashboard`. */
+export const saveDashboardRequestSchema = z.object({
+  state: dashboardStateSchema,
+});
+export type SaveDashboardRequest = z.infer<typeof saveDashboardRequestSchema>;
+
+/** Response of `GET`/`PUT /api/dashboard`. */
+export const dashboardResponseSchema = z.object({
+  state: dashboardStateSchema,
+  /** ISO timestamp of the last save (last write wins; CLAUDE.md §6.5). */
+  updatedAt: z.iso.datetime(),
+});
+export type DashboardResponse = z.infer<typeof dashboardResponseSchema>;

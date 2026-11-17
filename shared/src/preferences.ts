@@ -26,3 +26,12 @@ export const DEFAULT_PREFERENCES: Readonly<Preferences> = {
   theme: "dark",
   palette: "aurora",
 };
+
+// ── API contracts (/api/preferences) ───────────────────────────────────────────
+
+/** Response of `GET`/`PUT /api/preferences` (the PUT body is `Preferences`). */
+export const preferencesResponseSchema = z.object({
+  preferences: preferencesSchema,
+  updatedAt: z.iso.datetime(),
+});
+export type PreferencesResponse = z.infer<typeof preferencesResponseSchema>;

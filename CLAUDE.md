@@ -370,6 +370,12 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
   - Usuário repetido → 409 `CONFLICT`.
   - O cadastro cria o usuário com as preferências padrão e o dashboard padrão.
   - **Injeção de dependências:** os services dependem de interfaces de repositório (`UserRepository` etc.). `server.ts` liga a implementação Prisma, e os testes de unidade usam a implementação em memória de `__tests__/helpers.ts` (`createTestApp`).
+- **Dashboard e preferências (#21):**
+  - `GET`/`PUT /api/dashboard` com o corpo `{ state }` e resposta `{ state, updatedAt }`.
+  - `GET`/`PUT /api/preferences` com o corpo `Preferences` e resposta `{ preferences, updatedAt }`.
+  - Os contratos ficam em `shared` (`saveDashboardRequestSchema`, `dashboardResponseSchema`, `preferencesResponseSchema`).
+  - Todas as rotas exigem sessão e só acessam os dados do próprio usuário.
+  - Se o estado salvo ficar inválido (mudança futura de schema), o `GET` devolve o dashboard padrão e registra um aviso no log. Na falta de registro, o padrão é criado.
 
 ## 14. Roteiro
 
