@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-/** Duration of the KPI count-up. */
-export const COUNT_UP_MS = 900;
+import { ANIMATION_MS, easeOutCubic } from "../styles/motion";
 
-const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+/** Same duration and easing as every other animation (styles/motion.ts). */
+export const COUNT_UP_MS = ANIMATION_MS;
 
 const prefersReducedMotion = (): boolean =>
   typeof window.matchMedia === "function" &&

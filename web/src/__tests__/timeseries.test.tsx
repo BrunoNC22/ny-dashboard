@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createQueryClient } from "../api/queryClient";
 import { getChartTheme } from "../charts/chartTheme";
+import { ANIMATION_MS } from "../styles/motion";
 import { resolveWidgetFilters } from "../widgets/resolveFilters";
 import { seriesChartConfig } from "../widgets/series/seriesChart";
 import { TimeSeriesWidget } from "../widgets/series/TimeSeriesWidget";
@@ -277,14 +278,24 @@ describe("chart config", () => {
     const x = (
       area.options.animations as Record<
         string,
-        { delay: unknown; from: unknown }
+        {
+          delay: (ctx: object) => number;
+          duration: (ctx: object) => number;
+          from: unknown;
+        }
       >
     ).x;
     if (!x) throw new Error("no x animation");
     expect(Number.isNaN(x.from)).toBe(true);
-    const delay = x.delay as (ctx: object) => number;
-    // each point waits for the ones before it (3 points over 900 ms)
-    expect(delay({ type: "data", index: 2, datasetIndex: 0 })).toBe(600);
+    // 3 points: eased-out timeline, the last point ends at ANIMATION_MS
+    const ctx = (index: number) => ({ type: "data", index, datasetIndex: 0 });
+    const starts = [0, 1, 2].map((i) => x.delay(ctx(i)));
+    const ends = [0, 1, 2].map((i) => (starts[i] ?? 0) + x.duration(ctx(i)));
+    expect(starts[0]).toBe(0);
+    expect(ends[2]).toBeCloseTo(ANIMATION_MS, 5);
+    // fast start, slow end: each slice is longer than the previous one
+    expect(x.duration(ctx(0))).toBeLessThan(x.duration(ctx(1)));
+    expect(x.duration(ctx(1))).toBeLessThan(x.duration(ctx(2)));
     expect(
       seriesChartConfig(datasets, { ...base, type: "bar" }).options,
     ).not.toHaveProperty("animations");
@@ -301,10 +312,18 @@ describe("chart config", () => {
       ...base,
       type: "bar",
     });
-    const delay = (options.animation as { delay: (ctx: object) => number })
-      .delay;
-    expect(delay({ type: "data", mode: "default", dataIndex: 0 })).toBe(0);
-    expect(delay({ type: "data", mode: "default", dataIndex: 2 })).toBe(600);
+    const { delay, duration, easing } = options.animation as {
+      delay: (ctx: object) => number;
+      duration: number;
+      easing: string;
+    };
+    const at = (dataIndex: number) =>
+      delay({ type: "data", mode: "default", dataIndex });
+    expect(easing).toBe("easeOutCubic");
+    expect(at(0)).toBe(0);
+    // the last bar finishes growing at ANIMATION_MS, and starts spread out more and more
+    expect(at(2) + duration).toBeCloseTo(ANIMATION_MS, 5);
+    expect(at(1) - at(0)).toBeLessThan(at(2) - at(1));
     const gradient = (
       data.datasets[0] as unknown as {
         nydGradient: { tip: string; base: string };

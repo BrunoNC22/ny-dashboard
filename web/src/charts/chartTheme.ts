@@ -37,6 +37,7 @@ import {
 } from "chart.js";
 import { ptBR } from "date-fns/locale";
 
+import { ANIMATION_MS, easeOutStart } from "../styles/motion";
 import { BASE, POINT_STYLES, seriesColors, STATUS } from "../styles/tokens";
 
 Chart.register(
@@ -134,7 +135,7 @@ export const applyChartDefaults = (theme: ChartTheme): void => {
   d.responsive = true;
   // Mutate (never replace) the animation defaults: Chart.js keeps internal settings there.
   Object.assign(d.animation as object, {
-    duration: 450,
+    duration: ANIMATION_MS,
     easing: "easeOutCubic",
   });
 
@@ -410,20 +411,19 @@ export const sparklineDataset = (theme: ChartTheme) => {
   };
 };
 
-/** Total time of the progressive line reveal. */
-export const PROGRESSIVE_DURATION_MS = 900;
-
 /**
  * Progressive reveal for line/area charts: points enter one after another from the start of the
  * x axis to the end, so the line is drawn left → right instead of rising from the bottom
- * (Chart.js "progressive line"). Each point starts at the previous point's height and slides in;
- * later updates (filters) animate normally.
+ * (Chart.js "progressive line"). The reveal as a whole eases out (first points fast, last ones
+ * slow) and ends at ANIMATION_MS; each point starts at the previous point's height. Later
+ * updates (filters) animate normally.
  */
 export const progressiveLineAnimation = (
   points: number,
-  totalMs = PROGRESSIVE_DURATION_MS,
+  totalMs = ANIMATION_MS,
 ): ChartOptions<"line">["animations"] => {
-  const step = totalMs / Math.max(points, 1);
+  const n = Math.max(points, 1);
+  const startOf = (index: number) => easeOutStart(index / n, totalMs);
   interface Ctx {
     type: string;
     index: number;
@@ -437,29 +437,29 @@ export const progressiveLineAnimation = (
     const previous = elements[Math.max(ctx.index - 1, 0)];
     return (previous?.getProps(["y"], true) as { y?: number } | undefined)?.y;
   };
+  // Each point moves during its own slice of the eased timeline.
+  const duration = (ctx: Ctx) =>
+    Math.max(1, startOf(ctx.index + 1) - startOf(ctx.index));
+  const delayOnce = (flag: "xStarted" | "yStarted") => (ctx: Ctx) => {
+    if (ctx.type !== "data" || ctx[flag]) return 0;
+    ctx[flag] = true;
+    return startOf(ctx.index);
+  };
   // Chart.js types the scriptable contexts loosely; the callbacks read only what Ctx declares.
   return {
     x: {
       type: "number" as const,
       easing: "linear" as const,
-      duration: step,
+      duration,
       from: NaN,
-      delay: (ctx: Ctx) => {
-        if (ctx.type !== "data" || ctx.xStarted) return 0;
-        ctx.xStarted = true;
-        return ctx.index * step;
-      },
+      delay: delayOnce("xStarted"),
     },
     y: {
       type: "number" as const,
       easing: "linear" as const,
-      duration: step,
+      duration,
       from: previousY,
-      delay: (ctx: Ctx) => {
-        if (ctx.type !== "data" || ctx.yStarted) return 0;
-        ctx.yStarted = true;
-        return ctx.index * step;
-      },
+      delay: delayOnce("yStarted"),
     },
   } as unknown as ChartOptions<"line">["animations"];
 };
@@ -467,18 +467,23 @@ export const progressiveLineAnimation = (
 // ── Bars: left → right growth and per-bar gradient ─────────────────────────────
 
 /**
- * Bars appear one after another from the start of the x axis, each still growing up from the
- * base (Chart.js default bar animation), like a wave left → right.
+ * Bars appear one after another from the start of the x axis, each growing up from its base: the
+ * starts spread over the first half of ANIMATION_MS (eased out: quick at first, slower at the
+ * end) and each bar grows (easeOutCubic) during the other half, so the last one ends on time.
  */
 export const staggeredBarAnimation = (
   points: number,
-  totalMs = PROGRESSIVE_DURATION_MS,
+  totalMs = ANIMATION_MS,
 ) => {
-  const step = totalMs / Math.max(points, 1);
+  const last = Math.max(points - 1, 1);
+  const half = totalMs / 2;
   return {
-    duration: 500,
+    duration: half,
+    easing: "easeOutCubic" as const,
     delay: (ctx: { type: string; mode: string; dataIndex: number }) =>
-      ctx.type === "data" && ctx.mode === "default" ? ctx.dataIndex * step : 0,
+      ctx.type === "data" && ctx.mode === "default"
+        ? easeOutStart(ctx.dataIndex / last, half)
+        : 0,
   };
 };
 
