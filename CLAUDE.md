@@ -166,7 +166,7 @@ As **métricas derivadas são calculadas a partir das somas** (por exemplo: tari
 
 ### 5.8 Projeção (esperado × real)
 
-- Modelo: **Holt-Winters** (aditivo, sazonalidade **semanal**, m = 7, com parâmetros otimizados por erro), implementado em TS (`api/src/lib`).
+- Modelo: **Holt-Winters aditivo com tendência amortecida** (φ entre 0,8 e 1), sazonalidade **semanal** (m = 7), em `api/src/lib/holtWinters.ts`. Os parâmetros α, β, γ e φ minimizam o erro quadrático da previsão um passo à frente, via Nelder-Mead (3 pontos de partida) numa parametrização sigmoide, o que mantém os limites sem restrições explícitas. A inicialização usa as duas primeiras semanas. Séries com menos de 2 semanas caem para o **seasonal naive**. As previsões são truncadas em ≥ 0. Desempenho: ~4 ms por ajuste numa série de ~650 dias.
 - Calculada **no seed**, a partir dos dados carregados, e guardada no banco.
 - Granularidade: **diária, por serviço × distrito**, só para **métricas somáveis**. Médias e percentuais da projeção são derivados das somas projetadas.
 - **Backtest mensal:** para cada mês M, a projeção é feita **só com dados até o fim de M−1** → permite "esperado × real" em qualquer período. O primeiro mês com backtest é **nov/2024** (out/2024 é aquecimento).
