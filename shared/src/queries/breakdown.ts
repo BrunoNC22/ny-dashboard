@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { UNITS } from "../catalog/metrics";
 import { comparisonSchema, queryFiltersSchema } from "../filters";
 import { uniqueArray } from "../helpers";
 import {
@@ -17,6 +18,8 @@ export const breakdownRequestSchema = z
     filters: queryFiltersSchema,
     comparison: comparisonSchema,
     sort: sortDirectionSchema,
+    /** Order rows by metric value (rankings) or by key (e.g. hours 0→23 for a radar). */
+    sortBy: z.enum(["value", "key"]).default("value"),
     topN: z.number().int().min(1).max(500).optional(),
   })
   .refine(
@@ -42,6 +45,9 @@ export type BreakdownRow = z.infer<typeof breakdownRowSchema>;
 export const breakdownResponseSchema = z.object({
   metric: metricIdSchema,
   dimensions: z.array(dimensionSchema),
+  unit: z.enum(UNITS),
+  /** Human-readable notes (pt-BR). */
+  notices: z.array(z.string()),
   notApplicable: z.boolean(),
   rows: z.array(breakdownRowSchema),
   /** Aggregate of the rows cut by `topN` ("Outros"). */

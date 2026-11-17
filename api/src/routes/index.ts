@@ -22,6 +22,7 @@ import type { DataRepository } from "../models/dataRepository";
 import type { QueryRepository } from "../models/queryRepository";
 import type { UserRepository } from "../models/userRepository";
 import { createAuthService } from "../services/authService";
+import { createBreakdownService } from "../services/breakdownService";
 import {
   createDashboardService,
   createPreferencesService,
@@ -72,9 +73,23 @@ export const createApiRouter = (deps: ApiDependencies): Router => {
   router.get("/meta", metaController.getMeta);
   router.get("/zones", metaController.getZones);
 
+  // Zone names for breakdown labels (loaded once; zones only change with the seed).
+  let zoneNames: Promise<ReadonlyMap<number, string>> | undefined;
+  const loadZoneNames = () => {
+    zoneNames ??= data
+      .listZones()
+      .then((zones) => new Map(zones.map((zone) => [zone.id, zone.name])))
+      .catch((error: unknown) => {
+        zoneNames = undefined;
+        throw error;
+      });
+    return zoneNames;
+  };
+
   const queryController = createQueryController({
     timeseries: createTimeseriesService(queries),
     kpi: createKpiService(queries),
+    breakdown: createBreakdownService(queries, loadZoneNames),
   });
   router.use("/query", createQueryRouter(queryController));
   router.use("/auth", createAuthRouter(authController, auth));

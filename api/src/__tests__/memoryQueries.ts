@@ -6,10 +6,12 @@ import type {
 } from "@ny-dashboard/shared";
 
 import { dayBucket } from "../lib/periods";
-import type {
-  BucketRow,
-  QueryRepository,
-  Sums,
+import {
+  breakdownSource,
+  type BucketRow,
+  type KeyedRow,
+  type QueryRepository,
+  type Sums,
 } from "../models/queryRepository";
 
 /** Pickup zone → borough for the fixtures (subset of the real lookup). */
@@ -45,7 +47,18 @@ export interface ProjectionFixture {
   sums: Sums;
 }
 
+export interface OdFixture {
+  /** First day of the month. */
+  month: string;
+  service: Service;
+  company: Company;
+  pu: number;
+  do: number;
+  sums: Sums;
+}
+
 export interface QueryFixtures {
+  od?: OdFixture[];
   daily?: DailyFixture[];
   hourly?: HourlyFixture[];
   projection?: ProjectionFixture[];
@@ -78,6 +91,29 @@ const aggregate = (
       ? a.group.localeCompare(b.group)
       : a.bucket.localeCompare(b.bucket),
   );
+};
+
+const isoDow = (date: string): string => {
+  const day = new Date(`${date}T00:00:00Z`).getUTCDay();
+  return String(day === 0 ? 7 : day);
+};
+
+const aggregateKeyed = (
+  items: { keys: string[]; sums: Sums }[],
+  columns: readonly BaseColumn[],
+): KeyedRow[] => {
+  const map = new Map<string, KeyedRow>();
+  for (const item of items) {
+    const key = item.keys.join("|");
+    const row = map.get(key) ?? { keys: item.keys, sums: {} };
+    for (const column of columns) {
+      const value = item.sums[column];
+      if (value === null || value === undefined) row.sums[column] ??= null;
+      else row.sums[column] = (row.sums[column] ?? 0) + value;
+    }
+    map.set(key, row);
+  }
+  return [...map.values()];
 };
 
 const includes = <T>(list: readonly T[], value: T) =>
@@ -151,5 +187,86 @@ export const createMemoryQueryRepository = (
         sums: row.sums,
       }));
     return Promise.resolve(aggregate(items, columns));
+  },
+  breakdown({ range, filters, dimensions, columns }) {
+    const source = breakdownSource(dimensions);
+    if (source === "od") {
+      const firstMonth = `${range.from.slice(0, 7)}-01`;
+      const items = (fixtures.od ?? [])
+        .filter(
+          (row) =>
+            row.month >= firstMonth &&
+            row.month <= range.to &&
+            filters.services.includes(row.service) &&
+            includes(filters.companies, row.company) &&
+            includes(filters.boroughs, ZONE_BOROUGH[row.pu] ?? "unknown") &&
+            includes(filters.zones, row.pu),
+        )
+        .map((row) => ({
+          keys: [`${String(row.pu)}>${String(row.do)}`],
+          sums: row.sums,
+        }));
+      return Promise.resolve(aggregateKeyed(items, columns));
+    }
+    if (source === "hourly") {
+      const items = (fixtures.hourly ?? [])
+        .filter(
+          (row) =>
+            row.hour.slice(0, 10) >= range.from &&
+            row.hour.slice(0, 10) <= range.to &&
+            filters.services.includes(row.service) &&
+            includes(filters.companies, row.company),
+        )
+        .map((row) => ({
+          keys: dimensions.map((d) =>
+            d === "hour_of_day"
+              ? String(Number(row.hour.slice(11, 13)))
+              : d === "day_of_week"
+                ? isoDow(row.hour.slice(0, 10))
+                : d === "company"
+                  ? row.company
+                  : row.service,
+          ),
+          sums: row.sums,
+        }));
+      return Promise.resolve(aggregateKeyed(items, columns));
+    }
+    const items = (fixtures.daily ?? [])
+      .filter(
+        (row) =>
+          row.date >= range.from &&
+          row.date <= range.to &&
+          filters.services.includes(row.service) &&
+          includes(filters.companies, row.company) &&
+          includes(filters.boroughs, ZONE_BOROUGH[row.zone] ?? "unknown") &&
+          includes(filters.zones, row.zone),
+      )
+      .map((row) => ({
+        keys: dimensions.map((d) =>
+          d === "borough"
+            ? (ZONE_BOROUGH[row.zone] ?? "unknown")
+            : d === "zone"
+              ? String(row.zone)
+              : d === "day_of_week"
+                ? isoDow(row.date)
+                : d === "company"
+                  ? row.company
+                  : row.service,
+        ),
+        sums: row.sums,
+      }));
+    return Promise.resolve(aggregateKeyed(items, columns));
+  },
+  projectionBreakdown({ range, services, boroughs, dimension, columns }) {
+    const items = (fixtures.projection ?? [])
+      .filter(
+        (row) =>
+          row.date >= range.from &&
+          row.date <= range.to &&
+          services.includes(row.service) &&
+          includes(boroughs, row.borough),
+      )
+      .map((row) => ({ keys: [row[dimension]], sums: row.sums }));
+    return Promise.resolve(aggregateKeyed(items, columns));
   },
 });

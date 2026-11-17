@@ -400,6 +400,16 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
     - com as duas regras, vale **a pior**. Sem regras ou sem dados, o status é **neutro**.
   - A comparação com projeção fica indisponível com filtro de empresa ou zona (`comparison: null`).
   - Com os dados reais, o dashboard padrão mostra 2 KPIs bons, 2 em atenção e 2 ruins em set/2026.
+- **Breakdown (#25, `POST /api/query/breakdown`, pública):**
+  - Fonte escolhida pelas dimensões:
+    - `route` → `od_flow_monthly`, agregado por **meses inteiros** (um aviso informa quando o período foi ampliado);
+    - `hour_of_day` → `trip_hourly` (sem distrito/zona → 400);
+    - as demais → `trip_daily` (dia da semana ISO).
+  - Rotas só têm corridas, receita, distância e duração. As outras métricas viram "não se aplica", com aviso.
+  - `sortBy: "value" | "key"` (o contrato ganhou o campo): `key` ordena numericamente quando a chave é número, como as horas 0 → 23.
+  - Top N + **"Outros"**, com a métrica recalculada a partir das somas das linhas cortadas.
+  - Comparação linha a linha por chave, com período anterior, ano anterior ou intervalo custom. Contra a projeção, só com uma dimensão `service` ou `borough` e sem filtro de empresa ou zona.
+  - Rótulos em pt-BR. Zonas e rotas usam os nomes da tabela `zones`, carregados uma vez, por exemplo "JFK Airport → Midtown Center".
 
 ## 14. Roteiro
 

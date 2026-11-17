@@ -3,6 +3,7 @@ import type {
   Borough,
   Company,
   DateRange,
+  Dimension,
   Granularity,
   SeriesDimension,
   Service,
@@ -45,10 +46,51 @@ export interface BucketRow {
 }
 
 /** Aggregated reads over the trip tables (the "M" of the query endpoints). */
+export interface BreakdownQuery {
+  range: DateRange;
+  filters: TripFilters;
+  dimensions: readonly Dimension[];
+  columns: readonly BaseColumn[];
+}
+
+export interface ProjectionBreakdownQuery {
+  range: DateRange;
+  services: Service[];
+  boroughs: Borough[];
+  dimension: "service" | "borough";
+  columns: readonly BaseColumn[];
+}
+
+/** Aggregated sums per combination of dimension values (`keys` follow `dimensions`). */
+export interface KeyedRow {
+  keys: string[];
+  sums: Sums;
+}
+
 export interface QueryRepository {
   series(query: SeriesQuery): Promise<BucketRow[]>;
   projection(query: ProjectionQuery): Promise<BucketRow[]>;
+  breakdown(query: BreakdownQuery): Promise<KeyedRow[]>;
+  projectionBreakdown(query: ProjectionBreakdownQuery): Promise<KeyedRow[]>;
 }
+
+/** Columns available in od_flow_monthly (route breakdowns). */
+export const ROUTE_COLUMNS: readonly BaseColumn[] = [
+  "trips",
+  "revenue",
+  "distance_mi",
+  "duration_s",
+];
+
+/** Table a breakdown reads from, decided by its dimensions. */
+export const breakdownSource = (
+  dimensions: readonly Dimension[],
+): "daily" | "hourly" | "od" =>
+  dimensions.includes("route")
+    ? "od"
+    : dimensions.includes("hour_of_day")
+      ? "hourly"
+      : "daily";
 
 // ── SQL building (identifiers come from whitelists; values are always parameters) ──────────
 
@@ -176,7 +218,164 @@ export const buildProjectionSql = ({
   };
 };
 
+const toKeyedRows = (
+  dimensions: number,
+  columns: readonly BaseColumn[],
+  rows: Record<string, unknown>[],
+): KeyedRow[] =>
+  rows.map((row) => ({
+    keys: Array.from({ length: dimensions }, (_, i) =>
+      String(row[`k${String(i)}`]),
+    ),
+    sums: Object.fromEntries(
+      columns.map((c) => [
+        c,
+        row[c] === null || row[c] === undefined ? null : Number(row[c]),
+      ]),
+    ),
+  }));
+
+/** SQL of `breakdown`. */
+export const buildBreakdownSql = ({
+  range,
+  filters,
+  dimensions,
+  columns,
+}: BreakdownQuery) => {
+  const p = new Params();
+  const where: string[] = [];
+  const source = breakdownSource(dimensions);
+
+  if (source === "od") {
+    const expressions: Record<string, string> = {
+      route: "o.pu_zone_id::text || '>' || o.do_zone_id::text",
+    };
+    where.push(
+      `o.month BETWEEN date_trunc('month', ${p.add(range.from, "date")})::date AND ${p.add(range.to, "date")}`,
+    );
+    where.push(`o.service = ANY(${p.add(filters.services, "text[]")})`);
+    if (filters.companies.length > 0) {
+      where.push(`o.company = ANY(${p.add(filters.companies, "text[]")})`);
+    }
+    if (filters.boroughs.length > 0) {
+      where.push(`o.pu_borough = ANY(${p.add(filters.boroughs, "text[]")})`);
+    }
+    if (filters.zones.length > 0)
+      where.push(`o.pu_zone_id = ANY(${p.add(filters.zones, "int[]")})`);
+    const keys = dimensions.map(
+      (d, i) => `${expressions[d] ?? "NULL"} AS k${String(i)}`,
+    );
+    return {
+      sql: `SELECT ${keys.join(", ")}, ${sumsSql("o", columns)} FROM od_flow_monthly o
+            WHERE ${where.join(" AND ")} GROUP BY ${dimensions.map((_, i) => String(i + 1)).join(", ")}`,
+      values: p.values,
+    };
+  }
+
+  if (source === "hourly") {
+    const expressions: Record<string, string> = {
+      service: "h.service",
+      company: "h.company",
+      hour_of_day: "extract(hour FROM h.hour)::int::text",
+      day_of_week: "extract(isodow FROM h.hour)::int::text",
+    };
+    const unsupported = dimensions.filter((d) => !(d in expressions));
+    if (
+      unsupported.length > 0 ||
+      filters.boroughs.length > 0 ||
+      filters.zones.length > 0
+    ) {
+      throw new Error(
+        "trip_hourly has no zone: borough/zone are not supported with hour_of_day",
+      );
+    }
+    where.push(`h.hour >= ${p.add(range.from, "timestamp")}`);
+    where.push(`h.hour < ${p.add(range.to, "date")} + 1`);
+    where.push(`h.service = ANY(${p.add(filters.services, "text[]")})`);
+    if (filters.companies.length > 0) {
+      where.push(`h.company = ANY(${p.add(filters.companies, "text[]")})`);
+    }
+    const keys = dimensions.map(
+      (d, i) => `${expressions[d] ?? "NULL"} AS k${String(i)}`,
+    );
+    return {
+      sql: `SELECT ${keys.join(", ")}, ${sumsSql("h", columns)} FROM trip_hourly h
+            WHERE ${where.join(" AND ")} GROUP BY ${dimensions.map((_, i) => String(i + 1)).join(", ")}`,
+      values: p.values,
+    };
+  }
+
+  const expressions: Record<string, string> = {
+    service: "d.service",
+    company: "d.company",
+    borough: "z.borough",
+    zone: "d.pu_zone_id::text",
+    day_of_week: "extract(isodow FROM d.date)::int::text",
+  };
+  const joinZones =
+    filters.boroughs.length > 0 || dimensions.includes("borough");
+  where.push(
+    `d.date BETWEEN ${p.add(range.from, "date")} AND ${p.add(range.to, "date")}`,
+  );
+  where.push(`d.service = ANY(${p.add(filters.services, "text[]")})`);
+  if (filters.companies.length > 0) {
+    where.push(`d.company = ANY(${p.add(filters.companies, "text[]")})`);
+  }
+  if (filters.boroughs.length > 0) {
+    where.push(`z.borough = ANY(${p.add(filters.boroughs, "text[]")})`);
+  }
+  if (filters.zones.length > 0)
+    where.push(`d.pu_zone_id = ANY(${p.add(filters.zones, "int[]")})`);
+  const keys = dimensions.map(
+    (d, i) => `${expressions[d] ?? "NULL"} AS k${String(i)}`,
+  );
+  return {
+    sql: `SELECT ${keys.join(", ")}, ${sumsSql("d", columns)} FROM trip_daily d
+          ${joinZones ? "JOIN zones z ON z.id = d.pu_zone_id" : ""}
+          WHERE ${where.join(" AND ")} GROUP BY ${dimensions.map((_, i) => String(i + 1)).join(", ")}`,
+    values: p.values,
+  };
+};
+
+/** SQL of `projectionBreakdown`. */
+export const buildProjectionBreakdownSql = ({
+  range,
+  services,
+  boroughs,
+  dimension,
+  columns,
+}: ProjectionBreakdownQuery) => {
+  const p = new Params();
+  const where = [
+    `p.date BETWEEN ${p.add(range.from, "date")} AND ${p.add(range.to, "date")}`,
+    `p.service = ANY(${p.add(services, "text[]")})`,
+  ];
+  if (boroughs.length > 0)
+    where.push(`p.borough = ANY(${p.add(boroughs, "text[]")})`);
+  return {
+    sql: `SELECT p.${dimension} AS k0, ${sumsSql("p", columns)} FROM projection p
+          WHERE ${where.join(" AND ")} GROUP BY 1`,
+    values: p.values,
+  };
+};
+
 export const createPrismaQueryRepository = (prisma: Db): QueryRepository => ({
+  async breakdown(query) {
+    const { sql, values } = buildBreakdownSql(query);
+    return toKeyedRows(
+      query.dimensions.length,
+      query.columns,
+      await prisma.$queryRawUnsafe(sql, ...values),
+    );
+  },
+  async projectionBreakdown(query) {
+    const { sql, values } = buildProjectionBreakdownSql(query);
+    return toKeyedRows(
+      1,
+      query.columns,
+      await prisma.$queryRawUnsafe(sql, ...values),
+    );
+  },
   async series(query) {
     const { sql, values } = buildSeriesSql(query);
     return toRows(query.columns, await prisma.$queryRawUnsafe(sql, ...values));

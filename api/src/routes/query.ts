@@ -15,5 +15,10 @@ export const createQueryRouter = (controller: QueryController): Router => {
     controller.timeseries,
   );
   router.post("/kpi", validate(querySchemas.kpi), controller.kpi);
+  router.post(
+    "/breakdown",
+    validate(querySchemas.breakdown),
+    controller.breakdown,
+  );
   return router;
 };
