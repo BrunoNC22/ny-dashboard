@@ -282,6 +282,14 @@ Status **bom / atenção / ruim** com ícone e cor. Configurável **por KPI**:
   - As respostas pequenas são validadas com os schemas do `shared`; `map` e `trips` não (até 1 milhão de pontos).
   - Hooks: `useMe` (devolve `null` para visitante), `useLogin`/`useRegister`/`useLogout`, `useDashboard`/`useSaveDashboard`, `usePreferences`/`useSavePreferences` (refetch no foco), `useMeta`/`useZones` (`staleTime` infinito) e `useTimeseries`/`useKpi`/`useBreakdown`/`useMapQuery`/`useTrips` (mantêm o resultado anterior enquanto os filtros mudam).
   - As chaves de query ficam em `queryKeys`.
+- **Estado do dashboard (#35, `web/src/stores`):**
+  - `useDashboardStore` (Zustand) guarda o `DashboardState`.
+  - Ações: `addWidget` (no fim **dos dois** layouts), `updateWidget`, `duplicateWidget` (mesmo tamanho), `removeWidget` (dos dois), `updateLayout(breakpoint)` (**só** aquele breakpoint; ignora callbacks que não mudam nada), `setFilters` e `resetToDefault`.
+  - Desfazer/refazer com 50 passos; toda ação entra no histórico, inclusive filtros e "voltar ao padrão". `hydrate` (servidor ou storage) não entra.
+  - `useDashboardSync` (montado uma vez):
+    - **visitante:** o estado fica no `localStorage` (`nyd:dashboard:v1`, sempre com try/catch);
+    - **logado:** carrega da API e **só aplica dados do servidor (inclusive o refetch no foco) se não houver edição local pendente**. Autosave 800 ms depois da última edição, e a última gravação vence.
+  - O status ("salvando / salvo / erro / local") fica em `useSaveStatus`.
 - **Componentes base** (`web/src/components/ui`): Button, IconButton, Card, Modal (foco preso, Escape, devolve o foco), Input, Select (nativo), SegmentedControl (radiogroup), Tabs (WAI-ARIA), Badge, Tooltip, Toast (Zustand), Skeleton e Spinner. A página `/_ds` (só em desenvolvimento; aceita `?theme=&palette=`) mostra todos.
 - **Tokens no Tailwind v4 (`@theme`)** como fonte única das cores. Tanto o `chartTheme.ts` (Chart.js) quanto o `mapTheme.ts` (MapLibre/deck.gl) **leem os mesmos tokens** (variáveis CSS), então mudar o tema ou a paleta atualiza gráficos e mapas.
 - `web/src/charts/chartTheme.ts` é **o único lugar** com estilo do Chart.js: defaults globais, fontes, grid, tooltips, helpers de gradiente e um plugin de glow.
