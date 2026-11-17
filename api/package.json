@@ -20,15 +20,18 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "tsx src/seed/index.ts"
   },
   "dependencies": {
     "@ny-dashboard/shared": "workspace:*",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
+    "bcryptjs": "3.0.3",
     "cookie-parser": "1.4.7",
     "express": "5.3.0",
     "pg": "8.23.1",
+    "pg-copy-streams": "7.0.0",
     "pino": "10.4.0",
     "pino-http": "11.0.0",
     "zod": "4.6.7"
@@ -38,6 +41,7 @@
     "@types/cookie-parser": "1.4.10",
     "@types/express": "5.0.6",
     "@types/pg": "8.23.1",
+    "@types/pg-copy-streams": "1.2.5",
     "@types/supertest": "7.2.1",
     "@vitest/coverage-v8": "5.1.0",
     "mapshaper": "0.7.101",

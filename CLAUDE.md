@@ -349,6 +349,14 @@ Detalhes de implementação decididos pelo agente a partir das decisões acima. 
     - scatter da amostra **filtrado a embarques no JFK**, para a primeira tela não carregar 1 milhão de pontos.
   - Layouts: desktop com KPIs de 2 colunas × 3 linhas e gráficos de 4 a 8 colunas; mobile com KPIs lado a lado e o resto em largura total.
   - `DATA_COVERAGE` concentra o período do snapshot. Um teste da api compara com o `manifest.json`.
+- **Seed (#18, `api/src/seed`, `pnpm --filter @ny-dashboard/api db:seed [--if-empty] [--force]`):**
+  - Valida o `manifest.json` e o sha256 de cada arquivo.
+  - Carrega `zones` (lookup + centróide) e as tabelas do snapshot via **`COPY ... FROM STDIN`** (`pg` + `pg-copy-streams`, lendo o gzip em stream), numa **única transação** que primeiro faz `TRUNCATE` nas tabelas de dados. Confere a contagem de linhas contra o manifest e roda `ANALYZE` no fim.
+  - **Idempotência:** `seed_meta.snapshot_sha256` guarda o checksum do manifest carregado. Com `--if-empty` (padrão), a carga só é pulada se o banco já tiver **este mesmo snapshot**; um snapshot diferente (atualização mensal) é recarregado. `--force` sempre recarrega.
+  - Usuários, preferências e dashboards nunca são apagados. O usuário `demo` só é criado se não existir, com preferências padrão e o dashboard padrão.
+  - Tempo: **~45 s** para carregar ~1,9 milhão de linhas no Postgres local.
+  - Senhas com **`bcryptjs`** (bcrypt em JS puro, custo 10), que evita build nativo no Docker e no CI.
+  - `findApiRoot()` localiza a pasta `api/` tanto em `src/` (tsx) quanto em `dist/` (bundle de produção).
 
 ## 14. Roteiro
 
@@ -370,6 +378,7 @@ As trilhas M1 (dados) e M3 (web base) podem andar em paralelo depois do M0.
 | Data       | Decisão                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-11-17 | Snapshot (#12): 58,9 MB versionado no repo mesmo acima dos ~50 MB previstos (decisão do dono). Cache de parquets apagado ao fim da #12; `etl.duckdb` mantido localmente para atualizações mensais.                                                            |
+| 2026-11-17 | Seed (#18): COPY em transação, idempotente pelo checksum do snapshot; bcryptjs em vez de bcrypt nativo.                                                                                                                                                       |
 | 2026-11-17 | Banco (#14): Prisma 7 + adapter pg, Postgres 18, estado do dashboard em JSON, projeção em formato largo por serviço × distrito.                                                                                                                               |
 | 2026-11-17 | API (#13): Express 5 + pino; padrão de erros e de validação descritos na §13.                                                                                                                                                                                 |
 | 2026-11-17 | ETL (#8): agregados acumulados em `etl.duckdb`. Durante as #8 a #12, os parquets dos 24 meses (~14 GB) ficam em cache (`--keep-cache`) para reprocessar sem baixar de novo. **O cache deve ser apagado ao fim da #12.**                                       |
