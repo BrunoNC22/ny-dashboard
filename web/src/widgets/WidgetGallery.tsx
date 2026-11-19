@@ -16,6 +16,19 @@ import type { WidgetGroup } from "./types";
 
 const GROUP_ORDER = Object.keys(GROUP_LABELS) as WidgetGroup[];
 
+/**
+ * Scrolls to a widget once the grid renders it: the store update reaches the DOM a frame or two
+ * after the click, so look again on the next frames (up to ~1 s) instead of only once.
+ */
+const scrollToWidget = (id: string, framesLeft = 60): void => {
+  requestAnimationFrame(() => {
+    const element = document.querySelector(`[data-widget-id="${id}"]`);
+    if (element)
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    else if (framesLeft > 0) scrollToWidget(id, framesLeft - 1);
+  });
+};
+
 /** "Adicionar widget": ready-made templates by group, with search (CLAUDE.md §6.1). */
 export function WidgetGallery() {
   const open = useUiStore((s) => s.galleryOpen);
@@ -32,11 +45,7 @@ export function WidgetGallery() {
     toast.success(
       `“${widget.title}” adicionado. Use o lápis para personalizar.`,
     );
-    requestAnimationFrame(() => {
-      document
-        .querySelector(`[data-widget-id="${widget.id}"]`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
+    scrollToWidget(widget.id);
   };
 
   return (

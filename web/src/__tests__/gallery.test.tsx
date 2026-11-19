@@ -5,7 +5,7 @@ import {
 } from "@ny-dashboard/shared";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useDashboardStore } from "../stores/dashboardStore";
 import { useUiStore } from "../stores/uiStore";
@@ -84,6 +84,31 @@ describe("WidgetGallery", () => {
     expect(dashboardStateSchema.safeParse(state).success).toBe(true);
     expect(useUiStore.getState().galleryOpen).toBe(false);
     expect(useDashboardStore.getState().past).toHaveLength(1);
+  });
+
+  it("scrolls to the new widget once the grid renders it, even a few frames later", async () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    useUiStore.getState().openGallery();
+    render(<WidgetGallery />);
+    await userEvent.type(screen.getByLabelText("Buscar modelos"), "rotas");
+    vi.useFakeTimers({ toFake: ["requestAnimationFrame"] });
+    await userEvent.click(
+      screen.getByRole("button", { name: /Rotas mais frequentes.*Mapa/ }),
+    );
+    vi.advanceTimersToNextFrame();
+    vi.advanceTimersToNextFrame();
+    expect(scrollIntoView).not.toHaveBeenCalled(); // not in the DOM yet
+
+    const id = useDashboardStore.getState().state.widgets.at(-1)?.id ?? "";
+    const element = document.createElement("div");
+    element.dataset.widgetId = id;
+    document.body.append(element);
+    vi.advanceTimersToNextFrame();
+    expect(scrollIntoView).toHaveBeenCalledOnce();
+    expect(scrollIntoView.mock.contexts[0]).toBe(element);
+    element.remove();
+    vi.useRealTimers();
   });
 
   it("tells when nothing matches", async () => {
