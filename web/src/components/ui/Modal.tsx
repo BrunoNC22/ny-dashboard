@@ -74,7 +74,9 @@ export function Modal({
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
-      previous?.focus();
+      // Without scrolling: a modal opened from the header (gallery) would otherwise scroll the
+      // page back to the top, cancelling the scroll to the widget just added.
+      previous?.focus({ preventScroll: true });
     };
   }, [open, onClose]);
 

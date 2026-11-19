@@ -112,6 +112,15 @@ describe("Modal", () => {
     expect(screen.getByRole("button", { name: "abrir" })).toHaveFocus(); // focus restored
   });
 
+  it("restores focus without scrolling the page", async () => {
+    const focus = vi.spyOn(HTMLElement.prototype, "focus");
+    render(<Harness onClose={() => undefined} />);
+    await userEvent.click(screen.getByRole("button", { name: "abrir" }));
+    await userEvent.keyboard("{Escape}");
+    expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+    focus.mockRestore();
+  });
+
   it("closes on backdrop click and with the close button", async () => {
     const onClose = vi.fn();
     render(<Harness onClose={onClose} />);
